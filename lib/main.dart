@@ -6,9 +6,9 @@ import 'package:med/presentation/app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  initHive();
+  await initHive();
 
-  initAppModule();
+  await initAppModule();
 
   runApp(const App());
 }

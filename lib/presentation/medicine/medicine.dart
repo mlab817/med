@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:lottie/lottie.dart';
 import 'package:med/app/init_hive.dart';
 import 'package:med/data/models/reminder.dart';
-import 'package:med/presentation/app.dart';
 import 'package:med/presentation/resources/assets_manager.dart';
 import 'package:med/presentation/resources/color_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 import 'package:med/presentation/resources/strings_manager.dart';
 
-import '../../app/constants.dart';
 import '../resources/routes_manager.dart';
 
 class MedicinePage extends StatefulWidget {
@@ -34,6 +30,7 @@ class _MedicinePageState extends State<MedicinePage> {
 
   String _selectedMedicineForm = "Drops";
   String _selectedMedicineEveryday = "Yes";
+  int _selectedFrequency = 1;
 
   TimeOfDay selectedTime = TimeOfDay.now();
 
@@ -158,7 +155,12 @@ class _MedicinePageState extends State<MedicinePage> {
           const SizedBox(
             height: 8.0,
           ),
-          const Text('Medicine Name:', style: TextStyle(fontSize: FontSize.s20,)),
+          const Text(
+            'Medicine [Information]:',
+            style: TextStyle(
+              fontSize: FontSize.s20,
+            ),
+          ),
           const SizedBox(
             height: 8.0,
           ),
@@ -173,17 +175,28 @@ class _MedicinePageState extends State<MedicinePage> {
               style: const TextStyle(fontSize: FontSize.s24),
             ),
           ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppPadding.p12),
+            child: Text(
+              "Enter the information of the medicine including brand, dosage and form, e.g. Biogesic 500mg tablet",
+            ),
+          )
         ],
       ),
     );
   }
 
   Widget _getStepTwo() {
+    const List<int> options = [1, 2, 3, 4, 6, 8, 12, 24];
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(_medicineNameController.text, style: const TextStyle(fontSize: FontSize.s24,)),
+          Text(_medicineNameController.text,
+              style: const TextStyle(
+                fontSize: FontSize.s24,
+              )),
           Image.asset(
             ImageAssets.step2,
             height: AppSize.s150,
@@ -191,7 +204,69 @@ class _MedicinePageState extends State<MedicinePage> {
           const SizedBox(
             height: AppSize.s50,
           ),
-          const Text(StringManager.enterTheAmountOfMedicine, style: TextStyle(fontSize: FontSize.s20,)),
+          const Padding(
+            padding: EdgeInsets.all(AppPadding.p12),
+            child: Text(
+              "How OFTEN do you need to take this medicine?",
+              style: TextStyle(
+                fontSize: FontSize.s20,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: AppSize.s20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Every ',
+                style: TextStyle(fontSize: FontSize.s24),
+              ),
+              DropdownButton<int>(
+                items: options.map<DropdownMenuItem<int>>((int value) {
+                  return DropdownMenuItem<int>(
+                    value: value,
+                    child: Text(value.toString()),
+                  );
+                }).toList(),
+                onChanged: (int? value) {
+                  setState(() {
+                    _selectedFrequency = value!;
+                  });
+                },
+                value: _selectedFrequency,
+              ),
+              const Text(
+                ' hours',
+                style: TextStyle(fontSize: FontSize.s24),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _getStepSeven() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(_medicineNameController.text,
+              style: const TextStyle(
+                fontSize: FontSize.s24,
+              )),
+          Image.asset(
+            ImageAssets.step2,
+            height: AppSize.s150,
+          ),
+          const SizedBox(
+            height: AppSize.s50,
+          ),
+          const Text(StringManager.enterTheAmountOfMedicine,
+              style: TextStyle(
+                fontSize: FontSize.s20,
+              )),
           const SizedBox(height: AppSize.s20),
           SizedBox(
             width: AppSize.s200,
@@ -222,7 +297,10 @@ class _MedicinePageState extends State<MedicinePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(_medicineNameController.text, style: const TextStyle(fontSize: FontSize.s20,)),
+          Text(_medicineNameController.text,
+              style: const TextStyle(
+                fontSize: FontSize.s20,
+              )),
           Image.asset(
             ImageAssets.step2,
             height: 150.0,
@@ -230,7 +308,11 @@ class _MedicinePageState extends State<MedicinePage> {
           const SizedBox(
             height: 50.0,
           ),
-          const Text('Enter the total storage of your medicine:', style: TextStyle(fontSize: FontSize.s20), textAlign: TextAlign.center,),
+          const Text(
+            'Enter the total storage of your medicine:',
+            style: TextStyle(fontSize: FontSize.s20),
+            textAlign: TextAlign.center,
+          ),
           SizedBox(
             width: AppSize.s200,
             child: TextField(
@@ -253,12 +335,14 @@ class _MedicinePageState extends State<MedicinePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(_medicineNameController.text, style: const TextStyle(fontSize: FontSize.s24)),
+          Text(_medicineNameController.text,
+              style: const TextStyle(fontSize: FontSize.s24)),
           Image.asset(
             ImageAssets.step3,
             height: AppSize.s150,
           ),
-          const Text(StringManager.ailmentName, style: TextStyle(fontSize: FontSize.s20)),
+          const Text(StringManager.ailmentName,
+              style: TextStyle(fontSize: FontSize.s20)),
           Padding(
             padding: const EdgeInsets.all(30.0),
             child: TextField(
@@ -278,7 +362,10 @@ class _MedicinePageState extends State<MedicinePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(_medicineNameController.text, style: const TextStyle(fontSize: FontSize.s24),),
+          Text(
+            _medicineNameController.text,
+            style: const TextStyle(fontSize: FontSize.s24),
+          ),
           Image.asset(
             ImageAssets.step4,
             height: 150.0,
@@ -303,7 +390,8 @@ class _MedicinePageState extends State<MedicinePage> {
               backgroundColor: ColorManager.red,
               fixedSize: const Size(AppSize.s150, AppSize.s50),
             ),
-            child: const Text('Save'),)
+            child: const Text('Save'),
+          )
         ],
       ),
     );

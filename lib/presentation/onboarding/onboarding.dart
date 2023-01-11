@@ -36,14 +36,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
   int _currentIndex = 0;
 
   // set onboardingScreenViewed on first open
-  _bind() {
+  _setOnBoardingScreenViewed() async {
     _appPreferences.setOnBoardingScreenViewed();
   }
 
   @override
   void initState() {
     // run_bind()
-    _bind();
+    _setOnBoardingScreenViewed();
     super.initState();
   }
 
@@ -109,7 +109,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
           ),
           Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Text(currentSlide.description, style: const TextStyle(fontSize: FontSize.s20),),
+            child: Text(
+              currentSlide.description,
+              style: const TextStyle(fontSize: FontSize.s20),
+            ),
           ),
         ],
       ),
@@ -134,26 +137,63 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     });
                   },
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pushNamed(context, Routes.homeRoute);
-            },
-            child: const Text('Skip'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Icon(
+                  _currentIndex == 0
+                      ? Icons.circle_rounded
+                      : Icons.circle_outlined,
+                  size: AppSize.s16,
+                  color: ColorManager.darkgray,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Icon(
+                  _currentIndex == 1
+                      ? Icons.circle_rounded
+                      : Icons.circle_outlined,
+                  size: AppSize.s16,
+                  color: ColorManager.darkgray,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Icon(
+                  _currentIndex == 2
+                      ? Icons.circle_rounded
+                      : Icons.circle_outlined,
+                  size: AppSize.s16,
+                  color: ColorManager.darkgray,
+                ),
+              ),
+            ],
           ),
+          // TextButton(
+          //   onPressed: () {
+          //     Navigator.pushReplacementNamed(context, Routes.homeRoute);
+          //   },
+          //   child: const Text('Skip'),
+          // ),
           (_currentIndex == onboardingData.length - 1)
               ? TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, Routes.homeRoute);
+                    Navigator.pushReplacementNamed(context, Routes.homeRoute);
                   },
                   child: const Text('Proceed'))
               : IconButton(
                   icon: const Icon(Icons.chevron_right),
                   onPressed: () {
-                    setState(() {
-                      if (_currentIndex < onboardingData.length - 1) {
-                        _currentIndex++;
-                      }
-                    });
+                    setState(
+                      () {
+                        if (_currentIndex < onboardingData.length - 1) {
+                          _currentIndex++;
+                        }
+                      },
+                    );
                   },
                 ),
         ],

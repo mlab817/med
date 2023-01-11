@@ -6,6 +6,8 @@ import 'package:med/presentation/onboarding/onboarding.dart';
 import 'package:med/presentation/splash/splash.dart';
 import 'package:med/presentation/tip/tip.dart';
 
+import '../notification/notification.dart';
+
 class Routes {
   static const String homeRoute = "/home";
   static const String onboardingRoute = "/onboarding";
@@ -13,6 +15,7 @@ class Routes {
   static const String medicineRoute = "/medicine";
   static const String tipRoute = "/tip";
   static const String hotlinesRoute = "/hotlines";
+  static const String notificationsRoute = "/notifications";
 }
 
 class RouteGenerator {
@@ -30,6 +33,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const TipPage());
       case Routes.hotlinesRoute:
         return MaterialPageRoute(builder: (_) => const HotlinesPage());
+      case Routes.notificationsRoute:
+        return MaterialPageRoute(builder: (_) => const NotificationPage());
       default:
         return _undefinedRoute();
     }

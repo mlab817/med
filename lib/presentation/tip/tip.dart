@@ -63,7 +63,11 @@ class _TipPageState extends State<TipPage> {
               ),
               child: Text(
                 _randomTip.title,
-                style: TextStyle(color: ColorManager.blue),
+                style: TextStyle(
+                  color: ColorManager.blue,
+                  fontSize: FontSize.s20,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             SizedBox(
@@ -71,20 +75,29 @@ class _TipPageState extends State<TipPage> {
               child: SingleChildScrollView(
                   child: Padding(
                 padding: const EdgeInsets.all(AppPadding.p12),
-                child: Text(_randomTip.shortDescription),
+                child: Text(
+                  _randomTip.shortDescription,
+                  style: const TextStyle(
+                    fontSize: FontSize.s18,
+                  ),
+                ),
               )),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TipDetail(tip: _randomTip),
-                  ),
-                );
-              },
-              child: const Text('Read More'),
-            ),
+            if (_randomTip.longDescription != null)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorManager.primary,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TipDetail(tip: _randomTip),
+                    ),
+                  );
+                },
+                child: const Text('Read More'),
+              ),
           ],
         ),
       ),

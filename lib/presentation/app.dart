@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:med/presentation/onboarding/onboarding.dart';
 import 'package:med/presentation/resources/routes_manager.dart';
+
+import 'notification/notification.dart';
 
 class App extends StatelessWidget {
   const App({Key? key}) : super(key: key);
@@ -13,8 +14,9 @@ class App extends StatelessWidget {
         fontFamily: "Poppins",
       ),
       onGenerateRoute: RouteGenerator.getRoute,
-      initialRoute: Routes.splashRoute,
-      home: const OnboardingPage(),
+      initialRoute: Routes.notificationsRoute,
+      // Routes.splashRoute,
+      home: const NotificationPage(),
     );
   }
 }

@@ -12,6 +12,7 @@ class TipDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ColorManager.white,
       appBar: AppBar(
         leading: const CloseButton(),
         title: const Text('Tip for Today'),
@@ -37,7 +38,10 @@ class TipDetail extends StatelessWidget {
             const SizedBox(
               height: AppSize.s10,
             ),
-            Image.asset(tip.image),
+            SizedBox(
+              height: AppSize.s200,
+              child: Image.asset(tip.image, fit: BoxFit.scaleDown),
+            ),
             const SizedBox(
               height: AppSize.s10,
             ),
@@ -48,7 +52,7 @@ class TipDetail extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(AppPadding.p12),
                   child: Text(
-                    tip.longDescription,
+                    tip.longDescription ?? "No description",
                     style: const TextStyle(fontSize: FontSize.s16),
                   ),
                 ),
