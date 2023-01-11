@@ -18,6 +18,8 @@ class MedicinePage extends StatefulWidget {
 class _MedicinePageState extends State<MedicinePage> {
   final PageController _pageController = PageController();
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   final TextEditingController _medicineNameController = TextEditingController();
   final TextEditingController _medicineFormController = TextEditingController();
   final TextEditingController _medicineAmountController =
@@ -30,7 +32,9 @@ class _MedicinePageState extends State<MedicinePage> {
 
   String _selectedMedicineForm = "Drops";
   String _selectedMedicineEveryday = "Yes";
-  int _selectedFrequency = 1;
+  int? _selectedFrequency;
+
+  final List<int> _medicineTakePerDayOptions = [1, 2, 3, 4, 6, 8, 12, 24];
 
   TimeOfDay selectedTime = TimeOfDay.now();
 
@@ -88,9 +92,12 @@ class _MedicinePageState extends State<MedicinePage> {
             icon: const Icon(Icons.chevron_right),
             onPressed: _currentPage < 6
                 ? () {
-                    _pageController.nextPage(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeIn);
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      _pageController.nextPage(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeIn);
+                    }
                   }
                 : null,
           ),
@@ -125,6 +132,7 @@ class _MedicinePageState extends State<MedicinePage> {
       color: ColorManager.white,
       child: PageView(
         scrollDirection: Axis.horizontal,
+        allowImplicitScrolling: false,
         controller: _pageController,
         onPageChanged: (int page) {
           setState(() {
@@ -166,13 +174,22 @@ class _MedicinePageState extends State<MedicinePage> {
           ),
           Padding(
             padding: const EdgeInsets.all(24.0),
-            child: TextField(
-              controller: _medicineNameController,
-              textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: 'Enter here',
+            child: Form(
+              key: _formKey,
+              child: TextFormField(
+                controller: _medicineNameController,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(
+                  hintText: 'Enter here',
+                ),
+                style: const TextStyle(fontSize: FontSize.s24),
+                validator: ((value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the details of the medicine you plan to take.';
+                  }
+                  return null;
+                }),
               ),
-              style: const TextStyle(fontSize: FontSize.s24),
             ),
           ),
           const Padding(
@@ -187,61 +204,86 @@ class _MedicinePageState extends State<MedicinePage> {
   }
 
   Widget _getStepTwo() {
-    const List<int> options = [1, 2, 3, 4, 6, 8, 12, 24];
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(_medicineNameController.text,
-              style: const TextStyle(
-                fontSize: FontSize.s24,
-              )),
           Image.asset(
             ImageAssets.step2,
             height: AppSize.s150,
           ),
           const SizedBox(
-            height: AppSize.s50,
+            height: AppSize.s24,
           ),
-          const Padding(
-            padding: EdgeInsets.all(AppPadding.p12),
+          Padding(
+            padding: const EdgeInsets.all(AppPadding.p12),
             child: Text(
-              "How OFTEN do you need to take this medicine?",
-              style: TextStyle(
+              "How OFTEN do you need to take ${_medicineNameController.text} in a day?",
+              style: const TextStyle(
                 fontSize: FontSize.s20,
               ),
               textAlign: TextAlign.center,
             ),
           ),
           const SizedBox(height: AppSize.s20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Every ',
-                style: TextStyle(fontSize: FontSize.s24),
+          const Text('Select an option'),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(AppPadding.p12),
+              child: Form(
+                key: _formKey,
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 3 / 1, // width/height
+                    mainAxisSpacing: 10.0,
+                    crossAxisSpacing: 10.0,
+                  ),
+                  itemBuilder: (BuildContext context, int index) {
+                    return FormField<int>(
+                      builder: (FormFieldState<int> state) {
+                        return ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: _selectedFrequency == index ? 0 : 2,
+                            backgroundColor: _selectedFrequency == index
+                                ? ColorManager.primary
+                                : ColorManager.white,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _selectedFrequency = index;
+                              state.didChange(_selectedFrequency);
+                            });
+                          },
+                          child: Text(
+                            "${_medicineTakePerDayOptions[index].toString()}x a day",
+                            style: TextStyle(
+                              color: _selectedFrequency == index
+                                  ? ColorManager.white
+                                  : ColorManager.primary,
+                            ),
+                          ),
+                        );
+                      },
+                      validator: (value) {
+                        if (_selectedFrequency == null) {
+                          return 'Please select an option';
+                        }
+                        return null;
+                      },
+                    );
+                  },
+                  itemCount: _medicineTakePerDayOptions.length,
+                ),
               ),
-              DropdownButton<int>(
-                items: options.map<DropdownMenuItem<int>>((int value) {
-                  return DropdownMenuItem<int>(
-                    value: value,
-                    child: Text(value.toString()),
-                  );
-                }).toList(),
-                onChanged: (int? value) {
-                  setState(() {
-                    _selectedFrequency = value!;
-                  });
-                },
-                value: _selectedFrequency,
-              ),
-              const Text(
-                ' hours',
-                style: TextStyle(fontSize: FontSize.s24),
-              ),
-            ],
+            ),
           ),
+          SizedBox(
+            child: _selectedFrequency == null
+                ? const Text('Select an option')
+                : const Text('Select an option'),
+          ),
+          const SizedBox(height: AppSize.s20),
         ],
       ),
     );

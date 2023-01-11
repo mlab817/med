@@ -30,4 +30,5 @@ class ImageAssets {
 class JsonAssets {
   static const String animIllness = "$assetsJsonPath/illness.json";
   static const String tipJson = "$assetsJsonPath/tip.json";
+  static const String alarmClockJson = "$assetsJsonPath/alarm_clock.json";
 }

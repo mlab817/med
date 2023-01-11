@@ -46,6 +46,9 @@ dependencies:
   intl: ^0.18.0
   flutter_ringtone_player: ^3.2.0
   flutter_launcher_icons: ^0.11.0
+  uuid: ^3.0.7
+  audioplayers: ^2.0.0
+  android_alarm_manager_plus: ^2.1.0
 
 dev_dependencies:
   flutter_test:
@@ -90,6 +93,7 @@ flutter:
     - assets/images/organizeurday.webp
     - assets/images/smoothies.jpg
     - assets/images/takevitamins.png
+    - assets/json/alarm_clock.json
     - assets/json/illness.json
     - assets/json/tip.json
     - assets/mix.mp3
