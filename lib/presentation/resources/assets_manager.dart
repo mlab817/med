@@ -25,10 +25,12 @@ class ImageAssets {
   static const String organizeurday = "$assetsImagesPath/organizeurday.webp";
   static const String smoothies = "$assetsImagesPath/smoothies.jpg";
   static const String takevitamins = "$assetsImagesPath/takevitamins.png";
+  static const String takenotes = "$assetsImagesPath/takenotes.png";
 }
 
 class JsonAssets {
   static const String animIllness = "$assetsJsonPath/illness.json";
   static const String tipJson = "$assetsJsonPath/tip.json";
   static const String alarmClockJson = "$assetsJsonPath/alarm_clock.json";
+  static const String emptyJson = "$assetsJsonPath/empty.json";
 }

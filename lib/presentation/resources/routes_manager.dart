@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:med/presentation/home/home.dart';
-import 'package:med/presentation/hotlines/hotlines.dart';
+import 'package:med/presentation/main/main.dart';
 import 'package:med/presentation/medicine/medicine.dart';
 import 'package:med/presentation/onboarding/onboarding.dart';
 import 'package:med/presentation/splash/splash.dart';
@@ -16,6 +15,8 @@ class Routes {
   static const String tipRoute = "/tip";
   static const String hotlinesRoute = "/hotlines";
   static const String notificationsRoute = "/notifications";
+  static const String historyRoute = "/history";
+  static const String mainRoute = "/main";
 }
 
 class RouteGenerator {
@@ -23,16 +24,14 @@ class RouteGenerator {
     switch (routeSettings.name) {
       case Routes.splashRoute:
         return MaterialPageRoute(builder: (_) => const SplashPage());
-      case Routes.homeRoute:
-        return MaterialPageRoute(builder: (_) => const HomePage());
+      case Routes.mainRoute:
+        return MaterialPageRoute(builder: (_) => const MainPage());
       case Routes.onboardingRoute:
         return MaterialPageRoute(builder: (_) => const OnboardingPage());
-      case Routes.medicineRoute:
-        return MaterialPageRoute(builder: (_) => const MedicinePage());
       case Routes.tipRoute:
         return MaterialPageRoute(builder: (_) => const TipPage());
-      case Routes.hotlinesRoute:
-        return MaterialPageRoute(builder: (_) => const HotlinesPage());
+      case Routes.medicineRoute:
+        return MaterialPageRoute(builder: (_) => const MedicinePage());
       case Routes.notificationsRoute:
         return MaterialPageRoute(builder: (_) => const NotificationPage());
       default:

@@ -49,6 +49,8 @@ dependencies:
   uuid: ^3.0.7
   audioplayers: ^2.0.0
   android_alarm_manager_plus: ^2.1.0
+  confirm_dialog: ^1.0.1
+  timezone: ^0.9.1
 
 dev_dependencies:
   flutter_test:
@@ -92,10 +94,12 @@ flutter:
     - assets/images/meditate.webp
     - assets/images/organizeurday.webp
     - assets/images/smoothies.jpg
+    - assets/images/takenotes.png
     - assets/images/takevitamins.png
     - assets/json/alarm_clock.json
     - assets/json/illness.json
     - assets/json/tip.json
+    - assets/json/empty.json
     - assets/mix.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see

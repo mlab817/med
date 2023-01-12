@@ -172,16 +172,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
               ),
             ],
           ),
-          // TextButton(
-          //   onPressed: () {
-          //     Navigator.pushReplacementNamed(context, Routes.homeRoute);
-          //   },
-          //   child: const Text('Skip'),
-          // ),
           (_currentIndex == onboardingData.length - 1)
               ? TextButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, Routes.homeRoute);
+                    Navigator.pushReplacementNamed(context, Routes.mainRoute);
                   },
                   child: const Text('Proceed'))
               : IconButton(

@@ -27,7 +27,7 @@ class _SplashPageState extends State<SplashPage> {
   void _goNext() {
     _appPreferences.isOnBoardingScreenViewed().then((isOnBoardingScreenViewed) {
       if (isOnBoardingScreenViewed) {
-        Navigator.pushReplacementNamed(context, Routes.homeRoute);
+        Navigator.pushReplacementNamed(context, Routes.mainRoute);
       } else {
         Navigator.pushReplacementNamed(context, Routes.onboardingRoute);
       }
@@ -53,7 +53,7 @@ class _SplashPageState extends State<SplashPage> {
       body: Center(
         child: Image.asset(
           ImageAssets.icon,
-          height: AppSize.s50,
+          height: AppSize.s128,
         ),
       ),
     );

@@ -98,7 +98,7 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.pushNamed(context, Routes.homeRoute);
+                Navigator.pushReplacementNamed(context, Routes.mainRoute);
               },
               child: const Text('Proceed to Home'),
             )
@@ -122,28 +122,30 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Future<void> _showNotif() async {
     const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails('your channel id', 'your channel name',
-            channelDescription: 'your channel description',
-            importance: Importance.max,
-            priority: Priority.high,
-            ticker: 'ticker',
-            fullScreenIntent: true,
-            // sound: RawResourceAndroidNotificationSound('mix'),
-            playSound: true,
-            // audioAttributesUsage: AudioAttributesUsage.alarm,
-            actions: [
-          AndroidNotificationAction(
-            "snooze",
-            "Snooze",
-            titleColor: Colors.redAccent,
-            showsUserInterface: true,
-          ),
-          AndroidNotificationAction(
-            "done",
-            "Mark as Done",
-            titleColor: Colors.lightGreen,
-          ),
-        ]);
+        AndroidNotificationDetails(
+      'your channel id', 'your channel name',
+      channelDescription: 'your channel description',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+      fullScreenIntent: true,
+      // sound: RawResourceAndroidNotificationSound('mix'),
+      playSound: true,
+      // audioAttributesUsage: AudioAttributesUsage.alarm,
+      actions: [
+        AndroidNotificationAction(
+          "snooze",
+          "Snooze",
+          titleColor: Colors.redAccent,
+          showsUserInterface: true,
+        ),
+        AndroidNotificationAction(
+          "done",
+          "Mark as Done",
+          titleColor: Colors.lightGreen,
+        ),
+      ],
+    );
 
     // more types of notifications can be added here like for ios
     const NotificationDetails notificationDetails =

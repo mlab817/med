@@ -1,11 +1,19 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
+import 'package:med/app/constants.dart';
 import 'package:med/app/init_hive.dart';
-import 'package:med/data/models/reminder.dart';
+import 'package:med/data/models/reminder_model.dart';
 import 'package:med/presentation/resources/assets_manager.dart';
 import 'package:med/presentation/resources/color_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 import 'package:med/presentation/resources/strings_manager.dart';
+import 'package:timezone/timezone.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../data/models/notification_model.dart';
 import '../resources/routes_manager.dart';
 
 class MedicinePage extends StatefulWidget {
@@ -16,27 +24,25 @@ class MedicinePage extends StatefulWidget {
 }
 
 class _MedicinePageState extends State<MedicinePage> {
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   final PageController _pageController = PageController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _medicineNameController = TextEditingController();
-  final TextEditingController _medicineFormController = TextEditingController();
-  final TextEditingController _medicineAmountController =
-      TextEditingController();
   final TextEditingController _medicineIllnessController =
       TextEditingController();
-  final TextEditingController _medicineEverydayController =
+  final TextEditingController _medicineDurationController =
       TextEditingController();
-  final TextEditingController _medicineTimeController = TextEditingController();
-
-  String _selectedMedicineForm = "Drops";
-  String _selectedMedicineEveryday = "Yes";
+  final TextEditingController _medicineStockController =
+      TextEditingController();
   int? _selectedFrequency;
 
-  final List<int> _medicineTakePerDayOptions = [1, 2, 3, 4, 6, 8, 12, 24];
+  final List<DateTime?> _startTimes = [];
 
-  TimeOfDay selectedTime = TimeOfDay.now();
+  final List<int> _medicineTakePerDayOptions = [1, 2, 3, 4, 6, 8, 12];
 
   int _currentPage = 0;
 
@@ -44,11 +50,9 @@ class _MedicinePageState extends State<MedicinePage> {
   void dispose() {
     _pageController.dispose();
     _medicineNameController.dispose();
-    _medicineFormController.dispose();
-    _medicineAmountController.dispose();
     _medicineIllnessController.dispose();
-    _medicineEverydayController.dispose();
-    _medicineTimeController.dispose();
+    _medicineDurationController.dispose();
+    _medicineStockController.dispose();
 
     super.dispose();
   }
@@ -70,10 +74,13 @@ class _MedicinePageState extends State<MedicinePage> {
         backgroundColor: ColorManager.white,
         iconTheme: IconThemeData(
           color: ColorManager.blue,
-          size: AppSize.s18,
+          // size: AppSize.s18,
         ),
       ),
-      body: _getPageBuilder(),
+      body: Form(
+        key: _formKey,
+        child: _getPageBuilder(),
+      ),
       bottomSheet: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -119,7 +126,7 @@ class _MedicinePageState extends State<MedicinePage> {
             child: const Text("Don't exit"),
           ),
           TextButton(
-            onPressed: () => Navigator.pushNamed(context, Routes.homeRoute),
+            onPressed: () => Navigator.pushNamed(context, Routes.mainRoute),
             child: const Text("It's fine"),
           ),
         ],
@@ -145,7 +152,7 @@ class _MedicinePageState extends State<MedicinePage> {
           _getStepThree(),
           _getStepFour(),
           _getStepFive(),
-          // _getStepSix(),
+          _getStepSix(),
         ],
       ),
     );
@@ -174,22 +181,19 @@ class _MedicinePageState extends State<MedicinePage> {
           ),
           Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: TextFormField(
-                controller: _medicineNameController,
-                textAlign: TextAlign.center,
-                decoration: const InputDecoration(
-                  hintText: 'Enter here',
-                ),
-                style: const TextStyle(fontSize: FontSize.s24),
-                validator: ((value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the details of the medicine you plan to take.';
-                  }
-                  return null;
-                }),
+            child: TextFormField(
+              controller: _medicineNameController,
+              textAlign: TextAlign.center,
+              decoration: const InputDecoration(
+                hintText: 'Enter here',
               ),
+              style: const TextStyle(fontSize: FontSize.s24),
+              validator: ((value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter the details of the medicine you plan to take.';
+                }
+                return null;
+              }),
             ),
           ),
           const Padding(
@@ -230,51 +234,61 @@ class _MedicinePageState extends State<MedicinePage> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(AppPadding.p12),
-              child: Form(
-                key: _formKey,
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 3 / 1, // width/height
-                    mainAxisSpacing: 10.0,
-                    crossAxisSpacing: 10.0,
-                  ),
-                  itemBuilder: (BuildContext context, int index) {
-                    return FormField<int>(
-                      builder: (FormFieldState<int> state) {
-                        return ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            elevation: _selectedFrequency == index ? 0 : 2,
-                            backgroundColor: _selectedFrequency == index
-                                ? ColorManager.primary
-                                : ColorManager.white,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _selectedFrequency = index;
-                              state.didChange(_selectedFrequency);
-                            });
-                          },
-                          child: Text(
-                            "${_medicineTakePerDayOptions[index].toString()}x a day",
-                            style: TextStyle(
-                              color: _selectedFrequency == index
-                                  ? ColorManager.white
-                                  : ColorManager.primary,
-                            ),
-                          ),
-                        );
-                      },
-                      validator: (value) {
-                        if (_selectedFrequency == null) {
-                          return 'Please select an option';
-                        }
-                        return null;
-                      },
-                    );
-                  },
-                  itemCount: _medicineTakePerDayOptions.length,
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 3 / 1, // width/height
+                  mainAxisSpacing: 10.0,
+                  crossAxisSpacing: 10.0,
                 ),
+                itemBuilder: (BuildContext context, int index) {
+                  return FormField<int>(
+                    builder: (FormFieldState<int> state) {
+                      return ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: _selectedFrequency ==
+                                  _medicineTakePerDayOptions[index]
+                              ? 0
+                              : 2,
+                          backgroundColor: _selectedFrequency ==
+                                  _medicineTakePerDayOptions[index]
+                              ? ColorManager.primary
+                              : ColorManager.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _selectedFrequency =
+                                _medicineTakePerDayOptions[index];
+                            state.didChange(_selectedFrequency);
+
+                            // updated _startTimes too
+                            _startTimes.clear();
+                            for (int i = 0; i < _selectedFrequency!; i++) {
+                              _startTimes.add(null);
+                            }
+                          });
+                        },
+                        child: Text(
+                          "${_medicineTakePerDayOptions[index].toString()}x a day",
+                          style: TextStyle(
+                            fontSize: FontSize.s20,
+                            color: _selectedFrequency ==
+                                    _medicineTakePerDayOptions[index]
+                                ? ColorManager.white
+                                : ColorManager.primary,
+                          ),
+                        ),
+                      );
+                    },
+                    validator: (value) {
+                      if (_selectedFrequency == null) {
+                        return 'Please select an option';
+                      }
+                      return null;
+                    },
+                  );
+                },
+                itemCount: _medicineTakePerDayOptions.length,
               ),
             ),
           ),
@@ -289,82 +303,85 @@ class _MedicinePageState extends State<MedicinePage> {
     );
   }
 
-  Widget _getStepSeven() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(_medicineNameController.text,
-              style: const TextStyle(
-                fontSize: FontSize.s24,
-              )),
-          Image.asset(
-            ImageAssets.step2,
-            height: AppSize.s150,
-          ),
-          const SizedBox(
-            height: AppSize.s50,
-          ),
-          const Text(StringManager.enterTheAmountOfMedicine,
-              style: TextStyle(
-                fontSize: FontSize.s20,
-              )),
-          const SizedBox(height: AppSize.s20),
-          SizedBox(
-            width: AppSize.s200,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _medicineAmountController,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter here',
-                    ),
-                    style: const TextStyle(fontSize: FontSize.s24),
-                  ),
-                ),
-                const Text('piece/s')
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  // add times for number of times
   Widget _getStepThree() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(_medicineNameController.text,
-              style: const TextStyle(
-                fontSize: FontSize.s20,
-              )),
-          Image.asset(
-            ImageAssets.step2,
-            height: 150.0,
+          Text(
+            _medicineNameController.text,
+            style: const TextStyle(
+              fontSize: FontSize.s20,
+            ),
           ),
           const SizedBox(
-            height: 50.0,
+            height: AppSize.s20,
           ),
-          const Text(
-            'Enter the total storage of your medicine:',
-            style: TextStyle(fontSize: FontSize.s20),
-            textAlign: TextAlign.center,
+          Icon(
+            Icons.alarm,
+            size: AppSize.s128,
+            color: ColorManager.primary,
           ),
-          SizedBox(
-            width: AppSize.s200,
-            child: TextField(
-              controller: _medicineAmountController,
-              keyboardType: TextInputType.number,
+          const SizedBox(
+            height: AppSize.s20,
+          ),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'At what time will you take them?',
+              style: TextStyle(fontSize: FontSize.s20),
               textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: 'Enter here',
-              ),
-              style: const TextStyle(fontSize: FontSize.s24),
+            ),
+          ),
+          const SizedBox(
+            height: AppSize.s20,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Select $_selectedFrequency time/s',
+              style: const TextStyle(fontSize: FontSize.s20),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _selectedFrequency,
+              itemBuilder: (context, index) {
+                var thisTime = _startTimes[index];
+
+                String formattedTime = thisTime != null
+                    ? DateFormat.jm().format(thisTime)
+                    : "Select time";
+
+                return GestureDetector(
+                  onTap: () => _selectTime(context, index),
+                  child: FormField<DateTime>(
+                    builder: (FormFieldState<DateTime> state) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: ColorManager.darkgray),
+                        ),
+                        child: ListTile(
+                          title: Text(
+                            formattedTime,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
+                    validator: (value) {
+                      debugPrint("_selectedFrequency $_selectedFrequency");
+                      debugPrint("_startTimesLength ${_startTimes.length}");
+                      if (_selectedFrequency != _startTimes.length) {
+                        return "Please complete the schedule for all the times.";
+                      }
+                      return null;
+                    },
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -372,6 +389,7 @@ class _MedicinePageState extends State<MedicinePage> {
     );
   }
 
+  // name of ailment
   Widget _getStepFour() {
     return Center(
       child: Column(
@@ -383,15 +401,29 @@ class _MedicinePageState extends State<MedicinePage> {
             ImageAssets.step3,
             height: AppSize.s150,
           ),
-          const Text(StringManager.ailmentName,
-              style: TextStyle(fontSize: FontSize.s20)),
+          const Padding(
+            padding: EdgeInsets.all(AppPadding.p12),
+            child: Text(
+              StringManager.ailmentName,
+              style: TextStyle(
+                fontSize: FontSize.s20,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(30.0),
-            child: TextField(
+            child: TextFormField(
               controller: _medicineIllnessController,
               textAlign: TextAlign.center,
               decoration: const InputDecoration(hintText: 'Enter here'),
               style: const TextStyle(fontSize: FontSize.s24),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Please enter the name of your ailment.";
+                }
+                return null;
+              },
             ),
           ),
         ],
@@ -415,130 +447,170 @@ class _MedicinePageState extends State<MedicinePage> {
           const SizedBox(
             height: AppSize.s50,
           ),
-          const Text('Select Time', style: TextStyle(fontSize: FontSize.s24)),
-          GestureDetector(
-            child: Text(
-              selectedTime.format(context),
-              style: const TextStyle(fontSize: FontSize.s36),
-            ),
-            onTap: () => _selectTime(context),
+          const Text(
+            'For how long do you need to take this medicine?',
+            style: TextStyle(fontSize: FontSize.s24),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(
-            height: AppSize.s50,
-          ),
-          ElevatedButton(
-            onPressed: _addReminder,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ColorManager.red,
-              fixedSize: const Size(AppSize.s150, AppSize.s50),
+          SizedBox(
+            width: double.infinity,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: AppSize.s200,
+                  child: TextFormField(
+                    controller: _medicineDurationController,
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      hintText: 'No. of days',
+                    ),
+                    style: const TextStyle(fontSize: FontSize.s24),
+                    validator: ((value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the number of days you need to take the medicine.';
+                      }
+                      return null;
+                    }),
+                  ),
+                ),
+                const Text('days'),
+              ],
             ),
-            child: const Text('Save'),
-          )
+          ),
         ],
       ),
     );
   }
 
-  // Widget _getStepSix() {
-  //   return Column(
-  //     mainAxisAlignment: MainAxisAlignment.center,
-  //     children: <Widget>[
-  //       Text(
-  //         'Confirm details',
-  //         style: Theme.of(context).textTheme.headline6,
-  //       ),
-  //       const SizedBox(height: AppSize.s20),
-  //       const Text('Medicine Name'),
-  //       Text(
-  //         _medicineNameController.text,
-  //         style: const TextStyle(
-  //           fontSize: AppSize.s18,
-  //         ),
-  //       ),
-  //       const SizedBox(height: AppSize.s20),
-  //       const Text('Medicine Form'),
-  //       Text(
-  //         _selectedMedicineForm,
-  //         style: const TextStyle(
-  //           fontSize: AppSize.s18,
-  //         ),
-  //       ),
-  //       const SizedBox(height: AppSize.s20),
-  //       const Text('Medicine Amount'),
-  //       Text(
-  //         "${_medicineAmountController.text}mg",
-  //         style: const TextStyle(
-  //           fontSize: AppSize.s18,
-  //         ),
-  //       ),
-  //       const SizedBox(height: AppSize.s20),
-  //       const Text('Illness'),
-  //       const SizedBox(height: AppSize.s20),
-  //       Text(
-  //         _medicineIllnessController.text,
-  //         style: const TextStyle(
-  //           fontSize: AppSize.s18,
-  //         ),
-  //       ),
-  //       const SizedBox(height: AppSize.s20),
-  //       const Text('Take every day'),
-  //       Text(
-  //         _selectedMedicineEveryday,
-  //         style: const TextStyle(
-  //           fontSize: AppSize.s18,
-  //         ),
-  //       ),
-  //       const SizedBox(height: AppSize.s20),
-  //       const Text('Take at time'),
-  //       Text(
-  //         selectedTime.format(context),
-  //         style: const TextStyle(
-  //           fontSize: AppSize.s18,
-  //         ),
-  //       ),
-  //       const SizedBox(height: AppSize.s20),
-  //       SizedBox(
-  //         height: AppSize.s50,
-  //         width: AppSize.s120,
-  //         child: ElevatedButton(
-  //           onPressed: _addReminder,
-  //           style: ElevatedButton.styleFrom(
-  //             backgroundColor: ColorManager.lightred,
-  //           ),
-  //           child: const Text('Save'),
-  //         ),
-  //       ),
-  //       const SizedBox(
-  //         height: AppSize.s50,
-  //       ),
-  //     ],
-  //   );
-  // }
-
-  Future<void> _selectTime(context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: selectedTime,
+  Widget _getStepSix() {
+    return SingleChildScrollView(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _medicineNameController.text,
+              style: const TextStyle(fontSize: FontSize.s24),
+            ),
+            Image.asset(
+              ImageAssets.takenotes,
+              height: 150.0,
+            ),
+            const SizedBox(
+              height: AppSize.s50,
+            ),
+            const Text(
+              'How many pieces of the medicine do you have at the moment?',
+              style: TextStyle(fontSize: FontSize.s24),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: AppSize.s200,
+                    child: TextFormField(
+                      controller: _medicineStockController,
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(fontSize: FontSize.s24),
+                      validator: ((value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the number of medicines.';
+                        }
+                        return null;
+                      }),
+                    ),
+                  ),
+                  const Text('pieces'),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: AppSize.s50,
+            ),
+            ElevatedButton(
+              onPressed: _addReminder,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorManager.red,
+                fixedSize: const Size(AppSize.s150, AppSize.s50),
+              ),
+              child: const Text('Save'),
+            )
+          ],
+        ),
+      ),
     );
-    if (picked != null && picked != selectedTime) {
-      setState(() {
-        selectedTime = picked;
-      });
-    }
+  }
+
+  Future<void> _selectTime(context, index) async {
+    var currentTime = DateTime.now();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: AppSize.s200,
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.time,
+              initialDateTime: currentTime
+                  .add(Duration(minutes: 30 - currentTime.minute % 30)),
+              minuteInterval: 10,
+              onDateTimeChanged: (DateTime newDateTime) {
+                // Handle the new time selection
+                debugPrint("newDateTime ${newDateTime.toString()}");
+                setState(() {
+                  _startTimes[index] = newDateTime;
+                });
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _addReminder() {
-    //
-    remindersBox.add(Reminder(
+    String uuid = const Uuid().toString();
+
+    Reminder newReminder = Reminder(
+      uuid,
       _medicineNameController.text,
-      _medicineFormController.text,
-      _medicineAmountController.text.isNotEmpty
-          ? int.parse(_medicineAmountController.text)
-          : 0,
+      _selectedFrequency!,
+      _startTimes[0]!.toIso8601String(),
+      // first start time, this can introduce a bug if the dose has already passed for the day
       _medicineIllnessController.text,
-      _selectedMedicineEveryday == 'Yes' ? true : false,
-      selectedTime.toString(),
-    ));
+      int.parse(_medicineDurationController.text).toInt(),
+      int.parse(_medicineStockController.text).toInt(), // remaining stock
+    );
+    //
+    remindersBox.add(newReminder);
+
+    newReminder.notifications = HiveList(notificationsBox);
+
+    // save the notification first
+    // then schedule them one by one
+    for (DateTime? dt in _startTimes) {
+      if (dt != null) {
+        var notifId = _generateNotificationId();
+
+        NotificationModel newNotif =
+            NotificationModel(notifId, dt.toIso8601String());
+
+        notificationsBox.add(newNotif);
+
+        newReminder.notifications?.add(newNotif);
+
+        _createNotifications(uuid, notifId, dt);
+      }
+    }
+    newReminder.save();
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -546,6 +618,71 @@ class _MedicinePageState extends State<MedicinePage> {
       ),
     );
 
-    Navigator.pushNamed(context, Routes.homeRoute);
+    Navigator.pushReplacementNamed(context, Routes.mainRoute);
+  }
+
+  void _createNotifications(String uuid, int notifId, DateTime startAt) async {
+    // create notifications
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'medicineReminder',
+      'your channel name',
+      channelDescription: 'your channel description',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+      fullScreenIntent: true,
+      sound: RawResourceAndroidNotificationSound('mix'),
+      playSound: true,
+      actions: [
+        AndroidNotificationAction(
+          NotificationActionsId.snooze,
+          "Snooze",
+          titleColor: Colors.redAccent,
+          showsUserInterface: true,
+        ),
+        AndroidNotificationAction(
+          NotificationActionsId.markAsDone,
+          "Mark as Done",
+          titleColor: Colors.lightGreen,
+          showsUserInterface: true,
+        ),
+      ],
+    );
+
+    // more types of notifications can be added here like for ios
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidNotificationDetails);
+
+    var location = getLocation(TzLocation.asiaManila);
+
+    // iterate and add 1 day
+    for (int i = 0;
+        i < int.parse(_medicineDurationController.text).toInt();
+        i++) {
+      // just add i to make sure notifs are unique
+      // need to store this to db
+      await _flutterLocalNotificationsPlugin.zonedSchedule(
+        notifId + i,
+        'Time for your medicine!',
+        'Take ${_medicineNameController.text} now',
+        TZDateTime.from(
+            startAt.add(
+              Duration(days: i),
+            ),
+            location),
+        notificationDetails,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        androidAllowWhileIdle: true,
+        payload: uuid, // uuid of reminder so it can be retrieved
+        matchDateTimeComponents: DateTimeComponents.dateAndTime,
+      );
+    }
+  }
+
+  int _generateNotificationId() {
+    var uuid = const Uuid();
+    return uuid.hashCode;
   }
 }

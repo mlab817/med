@@ -1,8 +1,9 @@
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:med/app/app.dart';
 import 'package:med/app/di.dart';
 import 'package:med/app/init_hive.dart';
-import 'package:med/presentation/app.dart';
+
+import 'domain/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,8 +12,7 @@ void main() async {
 
   await initAppModule();
 
-// initialize alarm manager
-  await AndroidAlarmManager.initialize();
+  await initNotificationsModule();
 
   runApp(const App());
 }

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'reminder.dart';
+part of 'reminder_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
@@ -21,27 +21,33 @@ class ReminderAdapter extends TypeAdapter<Reminder> {
       fields[1] as String,
       fields[2] as int,
       fields[3] as String,
-      fields[4] as bool,
-      fields[5] as String,
+      fields[4] as String,
+      fields[5] as int,
+      fields[6] as int,
+      notifications: (fields[7] as HiveList?)?.castHiveList(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Reminder obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.uuid)
       ..writeByte(1)
-      ..write(obj.form)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.amount)
+      ..write(obj.frequency)
       ..writeByte(3)
-      ..write(obj.illness)
+      ..write(obj.startAt)
       ..writeByte(4)
-      ..write(obj.takeEveryday)
+      ..write(obj.ailmentName)
       ..writeByte(5)
-      ..write(obj.takeTime);
+      ..write(obj.numberOfDays)
+      ..writeByte(6)
+      ..write(obj.remainingStock)
+      ..writeByte(7)
+      ..write(obj.notifications);
   }
 
   @override

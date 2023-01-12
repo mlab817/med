@@ -17,13 +17,19 @@ class AppSize {
   static const double s120 = 120;
   static const double s128 = 128;
   static const double s150 = 150;
+  static const double s180 = 180;
   static const double s200 = 200;
   static const double s250 = 250;
   static const double s300 = 300;
 }
 
 class AppPadding {
+  static const double p0 = 0;
+  static const double p4 = 4;
+  static const double p8 = 8;
   static const double p12 = 12;
+  static const double p16 = 16;
+  static const double p20 = 20;
 }
 
 class FontSize {
