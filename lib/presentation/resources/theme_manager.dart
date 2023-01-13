@@ -3,7 +3,7 @@ import 'package:med/presentation/resources/color_manager.dart';
 import 'package:med/presentation/resources/font_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 
-ThemeData getApplicationThem() {
+ThemeData getApplicationTheme() {
   return ThemeData(
     fontFamily: FontConstants.fontFamily,
     primaryColor: ColorManager.primary,

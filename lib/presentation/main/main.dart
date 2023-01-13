@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +9,7 @@ import 'package:med/presentation/resources/routes_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 
 import '../../app/di.dart';
+import '../show_reminder/show_reminder.dart';
 import 'history/history.dart';
 import 'home/home.dart';
 import 'hotlines/hotlines.dart';
@@ -78,6 +81,18 @@ class _MainPageState extends State<MainPage> {
             onPressed: _cancelAllNotifications,
             icon: Icon(
               Icons.stop_circle,
+              color: ColorManager.darkgray,
+            ),
+          ),
+        if (kDebugMode)
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) =>
+                      const ShowReminderPage(uuid: "Instance of 'Uuid'")));
+            },
+            icon: Icon(
+              Icons.send,
               color: ColorManager.darkgray,
             ),
           ),

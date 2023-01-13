@@ -1,16 +1,14 @@
-import 'package:background_fetch/background_fetch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:med/app/constants.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:uuid/uuid.dart';
 
-import '../app/init_hive.dart';
-import '../data/models/history_model.dart';
+import '../presentation/resources/strings_manager.dart';
 
 class NotificationService {
   // NotificationService(this._flutterLocalNotificationsPlugin);
-
   static final NotificationService _notificationService =
       NotificationService._internal();
 
@@ -25,23 +23,17 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  Future<void> init() async {
-    debugPrint("initialized notificationService");
-
+  Future<void> init(callback) async {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('app_icon');
 
     const InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: initializationSettingsAndroid, iOS: null, macOS: null);
+        InitializationSettings(android: initializationSettingsAndroid);
 
     tz.initializeTimeZones();
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onDidReceiveNotificationResponse:
-            onDidReceiveBackgroundNotificationResponse,
-        onDidReceiveBackgroundNotificationResponse:
-            onDidReceiveBackgroundNotificationResponse);
+        onDidReceiveNotificationResponse: callback);
   }
 
   final AndroidNotificationDetails _androidNotificationDetails =
@@ -68,31 +60,42 @@ class NotificationService {
         titleColor: Colors.lightGreen,
         showsUserInterface: true,
       ),
-      AndroidNotificationAction('cancel', 'Cancel Notifications'),
     ],
   );
 
-  Future<void> showNotifications({String? title, String? body}) async {
-    await _flutterLocalNotificationsPlugin.periodicallyShow(
+  Future<void> showNotifications(
+      {String? title, String? body, String? payload}) async {
+    await _flutterLocalNotificationsPlugin.show(
       0,
       title ?? "Notification Title",
       body ?? "This is the Notification Body!",
-      RepeatInterval.everyMinute,
+      // RepeatInterval.everyMinute,
       NotificationDetails(android: _androidNotificationDetails),
-      androidAllowWhileIdle: true,
+      // androidAllowWhileIdle: true,
+      payload: payload ?? "some payload",
     );
   }
 
-  Future<void> scheduleNotifications({tz.TZDateTime? nextTime}) async {
+  Future<void> scheduleNotifications(
+      {int? id,
+      String? title,
+      String? body,
+      tz.TZDateTime? nextTime,
+      String? payload}) async {
+    // generate notificationId
+    int uuid = (const Uuid()).hashCode;
+
     await _flutterLocalNotificationsPlugin.zonedSchedule(
-        0,
-        "Notification Title",
-        "This is the Notification Body!",
-        nextTime ?? tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
-        NotificationDetails(android: _androidNotificationDetails),
-        androidAllowWhileIdle: true,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime);
+      id ?? uuid, // set to custom uuid if id is not defined
+      title ?? "Time to take your medicine!",
+      body ?? "This is the Notification Body!",
+      nextTime ?? tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1)),
+      NotificationDetails(android: _androidNotificationDetails),
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: payload ?? AppStrings.empty,
+    );
   }
 
   Future<void> cancelNotifications(int id) async {
@@ -102,97 +105,4 @@ class NotificationService {
   Future<void> cancelAllNotifications() async {
     await _flutterLocalNotificationsPlugin.cancelAll();
   }
-}
-
-Future<void> onDidReceiveNotificationResponse(
-    NotificationResponse response) async {
-  debugPrint("reminder ${response.actionId.toString()}");
-
-  switch (response.actionId) {
-    case NotificationActionsId.snooze:
-      NotificationService()
-          .showNotifications(title: 'Snoozed title', body: 'Snoozed body');
-      break;
-    case NotificationActionsId.markAsDone:
-      // create a record in history
-      HistoryModel history = HistoryModel(
-        'Paracetamol',
-        DateTime.now().toString(),
-      );
-      //
-      historyBox.add(history);
-      //
-      break;
-    default:
-      return;
-  }
-}
-
-Future<void> onDidReceiveBackgroundNotificationResponse(
-    NotificationResponse response) async {
-  switch (response.actionId) {
-    case NotificationActionsId.snooze:
-      // handle background task
-      BackgroundFetch.scheduleTask(TaskConfig(
-        taskId: NotificationActionsId.snooze,
-        delay: 5000,
-        periodic: false,
-        forceAlarmManager: false,
-        stopOnTerminate: false,
-        startOnBoot: true,
-        enableHeadless: true,
-        requiredNetworkType: NetworkType.NONE,
-        requiresBatteryNotLow: false,
-        requiresCharging: false,
-        requiresStorageNotLow: false,
-        requiresDeviceIdle: false,
-      ));
-      break;
-    case NotificationActionsId.markAsDone:
-      BackgroundFetch.scheduleTask(TaskConfig(
-        taskId: NotificationActionsId.markAsDone,
-        delay: 5000,
-        periodic: false,
-        forceAlarmManager: false,
-        stopOnTerminate: false,
-        startOnBoot: true,
-        enableHeadless: true,
-        requiredNetworkType: NetworkType.NONE,
-        requiresBatteryNotLow: false,
-        requiresCharging: false,
-        requiresStorageNotLow: false,
-        requiresDeviceIdle: false,
-      ));
-      break;
-    case 'cancel':
-      NotificationService().cancelAllNotifications();
-      break;
-    default:
-      return;
-  }
-}
-
-@pragma('vm:entry-point')
-void backgroundFetchTask(String taskId) async {
-  switch (taskId) {
-    case NotificationActionsId.snooze:
-      await NotificationService().scheduleNotifications(
-        nextTime: tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
-      );
-      debugPrint("snoozed for 10 mins");
-      break;
-    case NotificationActionsId.markAsDone:
-      HistoryModel history = HistoryModel(
-        'Paracetamol',
-        DateTime.now().toString(),
-      );
-      //
-      historyBox.add(history);
-      debugPrint("added history");
-      break;
-    default:
-      debugPrint("no task detected");
-      break;
-  }
-  BackgroundFetch.finish(taskId);
 }

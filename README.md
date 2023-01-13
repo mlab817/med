@@ -1,16 +1,11 @@
-# med
+# Lifeline360: A Medicine Tracker App
 
-A new Flutter project.
+## Features
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Remind yourself when it's time to take your medicine
+- Track your medicine stock and record your intake
+- Snooze reminders for 10 minutes when you're busy
+- Remind yourself to restock when you're almost empty
+- Review your medicine intake: what you took and what you missed
+- Track the remaining number of days to complete your intake
+- View emergency hotlines

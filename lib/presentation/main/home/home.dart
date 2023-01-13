@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:med/domain/notification_service.dart';
 import 'package:med/presentation/resources/assets_manager.dart';
 import 'package:med/presentation/resources/styles_manager.dart';
 
+import '../../../app/di.dart';
 import '../../../app/init_hive.dart';
 import '../../../data/models/reminder_model.dart';
 import '../../resources/color_manager.dart';
@@ -19,6 +21,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final NotificationService _notificationService =
+      instance<NotificationService>();
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -66,10 +71,14 @@ class _HomePageState extends State<HomePage> {
                   itemCount: box.length,
                   itemBuilder: (BuildContext context, int index) {
                     final reminder = box.getAt(index) as Reminder;
+                    // startAt
+                    DateTime startDate = DateTime.parse(reminder.startAt);
+                    int diff = DateTime.now().difference(startDate).inDays;
+                    int remainingDays = reminder.numberOfDays - diff;
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: AppPadding.p12),
-                      height: AppSize.s180,
+                      height: AppSize.s200,
                       decoration: BoxDecoration(
                         border: Border.all(color: ColorManager.darkgray),
                         borderRadius: BorderRadius.circular(AppSize.s12),
@@ -92,6 +101,8 @@ class _HomePageState extends State<HomePage> {
                                 "${reminder.frequency}x a day for ${reminder.numberOfDays.toString()} days"),
                             Text(
                                 'Remaining stock: ${reminder.remainingStock.toString()} pieces'),
+                            Text(
+                                "Remaining days: ${remainingDays.toString()} days"),
                             const SizedBox(height: AppSize.s20),
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
@@ -136,8 +147,8 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                         trailing: SizedBox(
-                          height: AppSize.s24,
-                          width: AppSize.s24,
+                          height: AppSize.s48,
+                          width: AppSize.s48,
                           child: IconButton(
                             onPressed: () async {
                               if (await confirm(

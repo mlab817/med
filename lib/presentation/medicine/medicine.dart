@@ -1,18 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-import 'package:med/app/constants.dart';
 import 'package:med/app/init_hive.dart';
 import 'package:med/data/models/reminder_model.dart';
+import 'package:med/domain/notification_service.dart';
 import 'package:med/presentation/resources/assets_manager.dart';
 import 'package:med/presentation/resources/color_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 import 'package:med/presentation/resources/strings_manager.dart';
-import 'package:timezone/timezone.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:uuid/uuid.dart';
 
+import '../../app/di.dart';
 import '../../data/models/notification_model.dart';
 import '../resources/routes_manager.dart';
 
@@ -24,8 +24,8 @@ class MedicinePage extends StatefulWidget {
 }
 
 class _MedicinePageState extends State<MedicinePage> {
-  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  final NotificationService _notificationService =
+      instance<NotificationService>();
 
   final PageController _pageController = PageController();
 
@@ -171,7 +171,7 @@ class _MedicinePageState extends State<MedicinePage> {
             height: 8.0,
           ),
           const Text(
-            'Medicine [Information]:',
+            'Medicine Information:',
             style: TextStyle(
               fontSize: FontSize.s20,
             ),
@@ -180,7 +180,7 @@ class _MedicinePageState extends State<MedicinePage> {
             height: 8.0,
           ),
           Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(AppPadding.p24),
             child: TextFormField(
               controller: _medicineNameController,
               textAlign: TextAlign.center,
@@ -404,7 +404,7 @@ class _MedicinePageState extends State<MedicinePage> {
           const Padding(
             padding: EdgeInsets.all(AppPadding.p12),
             child: Text(
-              StringManager.ailmentName,
+              AppStrings.ailmentName,
               style: TextStyle(
                 fontSize: FontSize.s20,
               ),
@@ -502,7 +502,7 @@ class _MedicinePageState extends State<MedicinePage> {
               height: AppSize.s50,
             ),
             const Text(
-              'How many pieces of the medicine do you have at the moment?',
+              AppStrings.stockLeft,
               style: TextStyle(fontSize: FontSize.s24),
               textAlign: TextAlign.center,
             ),
@@ -560,11 +560,10 @@ class _MedicinePageState extends State<MedicinePage> {
             child: CupertinoDatePicker(
               mode: CupertinoDatePickerMode.time,
               initialDateTime: currentTime
-                  .add(Duration(minutes: 30 - currentTime.minute % 30)),
+                  .add(Duration(minutes: 10 - currentTime.minute % 10)),
               minuteInterval: 10,
               onDateTimeChanged: (DateTime newDateTime) {
                 // Handle the new time selection
-                debugPrint("newDateTime ${newDateTime.toString()}");
                 setState(() {
                   _startTimes[index] = newDateTime;
                 });
@@ -577,7 +576,7 @@ class _MedicinePageState extends State<MedicinePage> {
   }
 
   void _addReminder() {
-    String uuid = const Uuid().toString();
+    String uuid = (const Uuid()).toString();
 
     Reminder newReminder = Reminder(
       uuid,
@@ -622,61 +621,22 @@ class _MedicinePageState extends State<MedicinePage> {
   }
 
   void _createNotifications(String uuid, int notifId, DateTime startAt) async {
-    // create notifications
-    const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
-      'medicineReminder',
-      'your channel name',
-      channelDescription: 'your channel description',
-      importance: Importance.max,
-      priority: Priority.high,
-      ticker: 'ticker',
-      fullScreenIntent: true,
-      sound: RawResourceAndroidNotificationSound('mix'),
-      playSound: true,
-      actions: [
-        AndroidNotificationAction(
-          NotificationActionsId.snooze,
-          "Snooze",
-          titleColor: Colors.redAccent,
-          showsUserInterface: true,
-        ),
-        AndroidNotificationAction(
-          NotificationActionsId.markAsDone,
-          "Mark as Done",
-          titleColor: Colors.lightGreen,
-          showsUserInterface: true,
-        ),
-      ],
-    );
-
-    // more types of notifications can be added here like for ios
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidNotificationDetails);
-
-    var location = getLocation(TzLocation.asiaManila);
-
     // iterate and add 1 day
     for (int i = 0;
         i < int.parse(_medicineDurationController.text).toInt();
         i++) {
       // just add i to make sure notifs are unique
       // need to store this to db
-      await _flutterLocalNotificationsPlugin.zonedSchedule(
-        notifId + i,
-        'Time for your medicine!',
-        'Take ${_medicineNameController.text} now',
-        TZDateTime.from(
+      await _notificationService.scheduleNotifications(
+        id: notifId + i,
+        title: 'Time for your medicine!',
+        body: 'Take ${_medicineNameController.text} now.',
+        nextTime: tz.TZDateTime.from(
             startAt.add(
               Duration(days: i),
             ),
-            location),
-        notificationDetails,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        androidAllowWhileIdle: true,
-        payload: uuid, // uuid of reminder so it can be retrieved
-        matchDateTimeComponents: DateTimeComponents.dateAndTime,
+            tz.local),
+        payload: uuid,
       );
     }
   }

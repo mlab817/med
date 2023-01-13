@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:med/presentation/main/main.dart';
 import 'package:med/presentation/medicine/medicine.dart';
 import 'package:med/presentation/onboarding/onboarding.dart';
+import 'package:med/presentation/show_reminder/show_reminder.dart';
 import 'package:med/presentation/splash/splash.dart';
 import 'package:med/presentation/tip/tip.dart';
-
-import '../notification/notification.dart';
 
 class Routes {
   static const String homeRoute = "/home";
@@ -14,9 +13,9 @@ class Routes {
   static const String medicineRoute = "/medicine";
   static const String tipRoute = "/tip";
   static const String hotlinesRoute = "/hotlines";
-  static const String notificationsRoute = "/notifications";
   static const String historyRoute = "/history";
   static const String mainRoute = "/main";
+  static const String showReminderRoute = "/showReminder";
 }
 
 class RouteGenerator {
@@ -32,8 +31,12 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const TipPage());
       case Routes.medicineRoute:
         return MaterialPageRoute(builder: (_) => const MedicinePage());
-      case Routes.notificationsRoute:
-        return MaterialPageRoute(builder: (_) => const NotificationPage());
+      case Routes.showReminderRoute:
+        final String uuid = routeSettings.arguments as String;
+        return MaterialPageRoute(
+          builder: (_) => ShowReminderPage(uuid: uuid),
+          fullscreenDialog: true,
+        );
       default:
         return _undefinedRoute();
     }

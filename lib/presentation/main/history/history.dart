@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:med/app/init_hive.dart';
 import 'package:med/data/models/history_model.dart';
@@ -62,14 +63,36 @@ class _HistoryPageState extends State<HistoryPage> {
                   );
                 }
 
-                return ListView.builder(
+                return ListView.separated(
                     itemCount: box.length,
+                    separatorBuilder: (context, index) {
+                      return const Divider();
+                    },
                     itemBuilder: (context, index) {
                       final HistoryModel history = historyBox.getAt(index);
+                      DateTime takenAt = DateTime.parse(history.takenAt);
 
-                      return ListTile(
-                        title: Text(history.medicineName),
-                        trailing: Text(history.takenAt),
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ListTile(
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(history.medicineName),
+                              Text(
+                                DateFormat('E, d MMM yyyy')
+                                    .add_jms()
+                                    .format(takenAt),
+                                style: getLightStyle(
+                                  color: ColorManager.darkgray,
+                                ),
+                              )
+                            ],
+                          ),
+                          // trailing: history.medicineAction != null
+                          //     ? _getStatus(history.medicineAction)
+                          //     : Container(),
+                        ),
                       );
                     });
               },
@@ -81,5 +104,29 @@ class _HistoryPageState extends State<HistoryPage> {
         ],
       ),
     );
+  }
+
+  Widget _getStatus(String medicineAction) {
+    final medicineActionMap = {
+      'skipped': MedicineAction.skipped,
+      'taken': MedicineAction.taken,
+    };
+
+    switch (medicineActionMap[medicineAction]) {
+      case MedicineAction.skipped:
+        return Text(MedicineAction.skipped.toString());
+        return Container(
+          padding: const EdgeInsets.all(AppPadding.p8),
+          decoration: BoxDecoration(
+            color: ColorManager.red,
+            borderRadius: BorderRadius.circular(AppSize.s4),
+          ),
+          child: Text(MedicineAction.skipped.toString().toUpperCase()),
+        );
+      case MedicineAction.taken:
+        return Text(MedicineAction.taken.toString());
+      default:
+        return Container();
+    }
   }
 }

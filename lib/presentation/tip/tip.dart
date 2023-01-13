@@ -52,10 +52,12 @@ class _TipPageState extends State<TipPage> {
             ),
             const SizedBox(height: AppSize.s50),
             SizedBox(
-                height: AppSize.s150,
-                child: Image.asset(_randomTip
-                    .image) //Lottie.asset(JsonAssets.tipJson, fit: BoxFit.contain),
-                ),
+              height: AppSize.s150,
+              child: Hero(
+                tag: 'tipPhoto',
+                child: Image.asset(_randomTip.image),
+              ), //Lottie.asset(JsonAssets.tipJson, fit: BoxFit.contain),
+            ),
             const SizedBox(height: AppSize.s20),
             Container(
               padding: const EdgeInsets.symmetric(

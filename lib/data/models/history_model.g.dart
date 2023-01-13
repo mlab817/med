@@ -19,17 +19,20 @@ class HistoryModelAdapter extends TypeAdapter<HistoryModel> {
     return HistoryModel(
       fields[0] as String,
       fields[1] as String,
+      fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, HistoryModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.medicineName)
       ..writeByte(1)
-      ..write(obj.takenAt);
+      ..write(obj.takenAt)
+      ..writeByte(2)
+      ..write(obj.medicineAction);
   }
 
   @override

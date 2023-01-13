@@ -40,7 +40,10 @@ class TipDetail extends StatelessWidget {
             ),
             SizedBox(
               height: AppSize.s200,
-              child: Image.asset(tip.image, fit: BoxFit.scaleDown),
+              child: Hero(
+                tag: 'tipPhoto',
+                child: Image.asset(tip.image, fit: BoxFit.scaleDown),
+              ),
             ),
             const SizedBox(
               height: AppSize.s10,
