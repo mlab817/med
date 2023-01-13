@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:med/domain/notification_service.dart';
 import 'package:med/presentation/resources/assets_manager.dart';
+import 'package:med/presentation/resources/strings_manager.dart';
 import 'package:med/presentation/resources/styles_manager.dart';
 
 import '../../../app/di.dart';
@@ -32,7 +33,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'My Medicines',
+            AppStrings.myMedicines,
             style: getBoldStyle(
               color: ColorManager.primary,
               fontSize: FontSize.s24,
@@ -55,7 +56,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         const SizedBox(height: AppSize.s24),
                         Text(
-                          'No medicines yet. Add one now.',
+                          AppStrings.noMedicine,
                           style: getBoldStyle(
                             color: ColorManager.red,
                             fontSize: FontSize.s20,
@@ -148,14 +149,14 @@ class _HomePageState extends State<HomePage> {
                         ),
                         trailing: SizedBox(
                           height: AppSize.s48,
-                          width: AppSize.s48,
+                          width: AppSize.s100,
                           child: IconButton(
                             onPressed: () async {
                               if (await confirm(
                                 context,
-                                title: const Text('Confirm delete'),
-                                content: const Text(
-                                    'Are you sure you want to delete this reminder? This action cannot be undone.'),
+                                title: const Text(AppStrings.confirmDelete),
+                                content:
+                                    const Text(AppStrings.confirmDeleteContent),
                               )) {
                                 return reminder.delete();
                               }
@@ -175,6 +176,7 @@ class _HomePageState extends State<HomePage> {
               },
             ),
           ),
+          // add sizedBox below to account for bottomSheet
           const SizedBox(
             height: AppSize.s64,
           ),

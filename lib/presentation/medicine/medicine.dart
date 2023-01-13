@@ -62,7 +62,7 @@ class _MedicinePageState extends State<MedicinePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Add Medicine',
+          AppStrings.addMedicine,
           style: TextStyle(
             color: ColorManager.blue,
           ),
@@ -70,7 +70,7 @@ class _MedicinePageState extends State<MedicinePage> {
         leading: BackButton(
           onPressed: _onBackButtonPressed,
         ),
-        elevation: 0.0,
+        elevation: AppSize.s0,
         backgroundColor: ColorManager.white,
         iconTheme: IconThemeData(
           color: ColorManager.blue,
@@ -117,17 +117,16 @@ class _MedicinePageState extends State<MedicinePage> {
     return await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Are you sure?'),
-        content: const Text(
-            'Exiting will delete the information you entered. Continue?'),
+        title: const Text(AppStrings.areYouSure),
+        content: const Text(AppStrings.exitWarning),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text("Don't exit"),
+            child: const Text(AppStrings.dontExit),
           ),
           TextButton(
             onPressed: () => Navigator.pushNamed(context, Routes.mainRoute),
-            child: const Text("It's fine"),
+            child: const Text(AppStrings.itsFine),
           ),
         ],
       ),
@@ -171,7 +170,7 @@ class _MedicinePageState extends State<MedicinePage> {
             height: 8.0,
           ),
           const Text(
-            'Medicine Information:',
+            AppStrings.medicineInformation,
             style: TextStyle(
               fontSize: FontSize.s20,
             ),
@@ -185,12 +184,12 @@ class _MedicinePageState extends State<MedicinePage> {
               controller: _medicineNameController,
               textAlign: TextAlign.center,
               decoration: const InputDecoration(
-                hintText: 'Enter here',
+                hintText: AppStrings.enterHere,
               ),
               style: const TextStyle(fontSize: FontSize.s24),
               validator: ((value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter the details of the medicine you plan to take.';
+                  return AppStrings.enterDetails;
                 }
                 return null;
               }),
@@ -199,7 +198,7 @@ class _MedicinePageState extends State<MedicinePage> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: AppPadding.p12),
             child: Text(
-              "Enter the information of the medicine including brand, dosage and form, e.g. Biogesic 500mg tablet",
+              AppStrings.enterDetailsHint,
             ),
           )
         ],
@@ -292,12 +291,6 @@ class _MedicinePageState extends State<MedicinePage> {
               ),
             ),
           ),
-          SizedBox(
-            child: _selectedFrequency == null
-                ? const Text('Select an option')
-                : const Text('Select an option'),
-          ),
-          const SizedBox(height: AppSize.s20),
         ],
       ),
     );
@@ -329,7 +322,7 @@ class _MedicinePageState extends State<MedicinePage> {
           const Padding(
             padding: EdgeInsets.all(8.0),
             child: Text(
-              'At what time will you take them?',
+              'At what time/s will you take them?',
               style: TextStyle(fontSize: FontSize.s20),
               textAlign: TextAlign.center,
             ),
@@ -338,12 +331,15 @@ class _MedicinePageState extends State<MedicinePage> {
             height: AppSize.s20,
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(AppPadding.p8),
             child: Text(
               'Select $_selectedFrequency time/s',
               style: const TextStyle(fontSize: FontSize.s20),
               textAlign: TextAlign.center,
             ),
+          ),
+          const SizedBox(
+            height: AppSize.s20,
           ),
           Expanded(
             child: ListView.builder(
@@ -372,8 +368,6 @@ class _MedicinePageState extends State<MedicinePage> {
                       );
                     },
                     validator: (value) {
-                      debugPrint("_selectedFrequency $_selectedFrequency");
-                      debugPrint("_startTimesLength ${_startTimes.length}");
                       if (_selectedFrequency != _startTimes.length) {
                         return "Please complete the schedule for all the times.";
                       }
@@ -412,15 +406,15 @@ class _MedicinePageState extends State<MedicinePage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(30.0),
+            padding: const EdgeInsets.all(AppPadding.p24),
             child: TextFormField(
               controller: _medicineIllnessController,
               textAlign: TextAlign.center,
-              decoration: const InputDecoration(hintText: 'Enter here'),
+              decoration: const InputDecoration(hintText: AppStrings.enterHere),
               style: const TextStyle(fontSize: FontSize.s24),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return "Please enter the name of your ailment.";
+                  return AppStrings.enterNameOfAilment;
                 }
                 return null;
               },
@@ -442,13 +436,13 @@ class _MedicinePageState extends State<MedicinePage> {
           ),
           Image.asset(
             ImageAssets.step4,
-            height: 150.0,
+            height: AppSize.s150,
           ),
           const SizedBox(
             height: AppSize.s50,
           ),
           const Text(
-            'For how long do you need to take this medicine?',
+            AppStrings.lengthOfMedicine,
             style: TextStyle(fontSize: FontSize.s24),
             textAlign: TextAlign.center,
           ),
@@ -475,7 +469,7 @@ class _MedicinePageState extends State<MedicinePage> {
                     }),
                   ),
                 ),
-                const Text('days'),
+                const Text(AppStrings.days),
               ],
             ),
           ),
@@ -496,7 +490,7 @@ class _MedicinePageState extends State<MedicinePage> {
             ),
             Image.asset(
               ImageAssets.takenotes,
-              height: 150.0,
+              height: AppSize.s150,
             ),
             const SizedBox(
               height: AppSize.s50,
@@ -526,7 +520,7 @@ class _MedicinePageState extends State<MedicinePage> {
                       }),
                     ),
                   ),
-                  const Text('pieces'),
+                  const Text(AppStrings.pieces),
                 ],
               ),
             ),
@@ -537,9 +531,12 @@ class _MedicinePageState extends State<MedicinePage> {
               onPressed: _addReminder,
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorManager.red,
-                fixedSize: const Size(AppSize.s150, AppSize.s50),
+                fixedSize: const Size(
+                  AppSize.s150,
+                  AppSize.s50,
+                ),
               ),
-              child: const Text('Save'),
+              child: const Text(AppStrings.save),
             )
           ],
         ),
@@ -613,7 +610,7 @@ class _MedicinePageState extends State<MedicinePage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Successfully added reminder!'),
+        content: Text(AppStrings.successfullyAddedReminder),
       ),
     );
 
@@ -629,7 +626,7 @@ class _MedicinePageState extends State<MedicinePage> {
       // need to store this to db
       await _notificationService.scheduleNotifications(
         id: notifId + i,
-        title: 'Time for your medicine!',
+        title: AppStrings.timeForYourMedicine,
         body: 'Take ${_medicineNameController.text} now.',
         nextTime: tz.TZDateTime.from(
             startAt.add(
