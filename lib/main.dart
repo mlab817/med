@@ -1,3 +1,4 @@
+import 'package:background_fetch/background_fetch.dart';
 import 'package:flutter/material.dart';
 import 'package:med/app/app.dart';
 import 'package:med/app/di.dart';
@@ -12,7 +13,13 @@ void main() async {
 
   await initAppModule();
 
-  await initNotificationsModule();
+  // await initNotificationsModule();
+
+  await NotificationService().init();
+
+  // headlessTask allows background task to run even when
+  // app is terminated
+  BackgroundFetch.registerHeadlessTask(backgroundFetchTask);
 
   runApp(const App());
 }

@@ -1,4 +1,3 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_it/get_it.dart';
 import 'package:med/app/preferences.dart';
 import 'package:med/domain/notification_service.dart';
@@ -9,14 +8,13 @@ final instance = GetIt.instance;
 Future<void> initAppModule() async {
   final sharedPrefs = await SharedPreferences.getInstance();
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  final NotificationService notificationService = NotificationService();
 
   instance.registerLazySingleton<SharedPreferences>(() => sharedPrefs);
 
   instance.registerLazySingleton<AppPreferences>(
-      () => AppPreferences(instance<SharedPreferences>()));
+          () => AppPreferences(instance<SharedPreferences>()));
 
   instance.registerLazySingleton<NotificationService>(
-      () => NotificationService(flutterLocalNotificationsPlugin));
+          () => notificationService);
 }

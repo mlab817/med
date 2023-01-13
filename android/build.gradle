@@ -9,12 +9,26 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
+
+    // required by background_fetch
+    // see https://github.com/transistorsoft/flutter_background_fetch/blob/master/help/INSTALL-ANDROID.md
+    ext {
+        compileSdkVersion = 31                // or latest
+        targetSdkVersion = 31                // or latest
+        appCompatVersion = "1.4.2"           // or latest
+    }
 }
 
 allprojects {
     repositories {
         google()
         mavenCentral()
+
+        // see https://github.com/transistorsoft/flutter_background_fetch/blob/master/help/INSTALL-ANDROID.md
+        maven {
+            // [required] background_fetch
+            url "${project(':background_fetch').projectDir}/libs"
+        }
     }
 }
 

@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
+import 'package:med/domain/notification_service.dart';
 import 'package:med/presentation/resources/color_manager.dart';
 import 'package:med/presentation/resources/routes_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 
-import '../../app/constants.dart';
+import '../../app/di.dart';
 import 'history/history.dart';
 import 'home/home.dart';
 import 'hotlines/hotlines.dart';
@@ -19,8 +19,8 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  final NotificationService _notificationService =
+      instance<NotificationService>();
 
   int _currentIndex = 0;
 
@@ -70,6 +70,14 @@ class _MainPageState extends State<MainPage> {
             onPressed: _testNotifications,
             icon: Icon(
               Icons.notifications,
+              color: ColorManager.darkgray,
+            ),
+          ),
+        if (kDebugMode)
+          IconButton(
+            onPressed: _cancelAllNotifications,
+            icon: Icon(
+              Icons.stop_circle,
               color: ColorManager.darkgray,
             ),
           ),
@@ -151,44 +159,13 @@ class _MainPageState extends State<MainPage> {
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Test notification sent.')));
 
-    const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
-      'medicineReminder',
-      'your channel name',
-      channelDescription: 'your channel description',
-      importance: Importance.max,
-      priority: Priority.high,
-      ticker: 'ticker',
-      fullScreenIntent: true,
-      sound: RawResourceAndroidNotificationSound('mix'),
-      playSound: true,
-      actions: [
-        AndroidNotificationAction(
-          NotificationActionsId.snooze,
-          "Snooze",
-          titleColor: Colors.redAccent,
-          showsUserInterface: true,
-        ),
-        AndroidNotificationAction(
-          NotificationActionsId.markAsDone,
-          "Mark as Done",
-          titleColor: Colors.lightGreen,
-          showsUserInterface: true,
-        ),
-      ],
-    );
+    _notificationService.showNotifications();
+  }
 
-    // more types of notifications can be added here like for ios
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidNotificationDetails);
+  Future<void> _cancelAllNotifications() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Test notification cancelled.')));
 
-    // test notification
-    await _flutterLocalNotificationsPlugin.show(
-      0,
-      'test',
-      'body',
-      notificationDetails,
-      payload: 'test stuff',
-    );
+    _notificationService.cancelAllNotifications();
   }
 }
