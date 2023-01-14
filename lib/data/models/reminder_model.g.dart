@@ -24,8 +24,7 @@ class ReminderAdapter extends TypeAdapter<Reminder> {
       fields[4] as String,
       fields[5] as int,
       fields[6] as int,
-      notifications: (fields[7] as HiveList?)?.castHiveList(),
-    );
+    )..schedules = (fields[7] as List).cast<String>();
   }
 
   @override
@@ -47,7 +46,7 @@ class ReminderAdapter extends TypeAdapter<Reminder> {
       ..writeByte(6)
       ..write(obj.remainingStock)
       ..writeByte(7)
-      ..write(obj.notifications);
+      ..write(obj.schedules);
   }
 
   @override

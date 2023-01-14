@@ -6,6 +6,7 @@ import 'package:med/presentation/resources/routes_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 
 import '../resources/assets_manager.dart';
+import '../resources/strings_manager.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({Key? key}) : super(key: key);
@@ -19,18 +20,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _pageController = PageController();
 
   List<OnboardingData> onboardingData = [
-    OnboardingData(
-        "Welcome to Lifeline360",
-        "We're here to help you to aid the forgetful and busy with remembering to take your daily medications. It is designed for users who need help keeping track of their medication schedule and who are dedicated to keeping the schedule.",
-        ImageAssets.ob1),
-    OnboardingData(
-        "Take your Medicines On Time",
-        "Set up your alarm by picking the Date and Time of intake along with your Medicine Name, Illness Name, Amount, and kind of Medicine.",
-        ImageAssets.ob2),
-    OnboardingData(
-        "Have a Healthy Lifestyle",
-        "We let you develop your Healthy Lifestyle by giving you a Everyday. Tips in improving your health and avoid getting sickness.",
-        ImageAssets.ob3),
+    OnboardingData(AppStrings.welcome, AppStrings.hereToHelp, ImageAssets.ob1),
+    OnboardingData(AppStrings.takeYourMedicinesOnTime,
+        AppStrings.setUpYourAlarm, ImageAssets.ob2),
+    OnboardingData(AppStrings.haveAHealthyLifestyle,
+        AppStrings.developHealthyLifestyle, ImageAssets.ob3),
   ];
 
   int _currentIndex = 0;
@@ -108,7 +102,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             height: 10,
           ),
           Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(AppPadding.p24),
             child: Text(
               currentSlide.description,
               style: const TextStyle(fontSize: FontSize.s20),
@@ -121,7 +115,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   Widget _getBottomSheet() {
     return Container(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(AppPadding.p8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -177,7 +171,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, Routes.mainRoute);
                   },
-                  child: const Text('Proceed'))
+                  child: const Text(AppStrings.proceed))
               : IconButton(
                   icon: const Icon(Icons.chevron_right),
                   onPressed: () {

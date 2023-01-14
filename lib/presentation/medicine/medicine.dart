@@ -1,20 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:med/app/di.dart';
+//
 import 'package:med/app/init_hive.dart';
+import 'package:med/data/models/notification_model.dart';
 import 'package:med/data/models/reminder_model.dart';
 import 'package:med/domain/notification_service.dart';
 import 'package:med/presentation/resources/assets_manager.dart';
 import 'package:med/presentation/resources/color_manager.dart';
+import 'package:med/presentation/resources/routes_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 import 'package:med/presentation/resources/strings_manager.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:uuid/uuid.dart';
-
-import '../../app/di.dart';
-import '../../data/models/notification_model.dart';
-import '../resources/routes_manager.dart';
 
 class MedicinePage extends StatefulWidget {
   const MedicinePage({Key? key}) : super(key: key);
@@ -229,7 +228,7 @@ class _MedicinePageState extends State<MedicinePage> {
             ),
           ),
           const SizedBox(height: AppSize.s20),
-          const Text('Select an option'),
+          const Text(AppStrings.selectAnOption),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(AppPadding.p12),
@@ -281,7 +280,7 @@ class _MedicinePageState extends State<MedicinePage> {
                     },
                     validator: (value) {
                       if (_selectedFrequency == null) {
-                        return 'Please select an option';
+                        return AppStrings.selectAnOption;
                       }
                       return null;
                     },
@@ -322,7 +321,7 @@ class _MedicinePageState extends State<MedicinePage> {
           const Padding(
             padding: EdgeInsets.all(8.0),
             child: Text(
-              'At what time/s will you take them?',
+              AppStrings.atWhatTimeWillYouTakeYourMedicine,
               style: TextStyle(fontSize: FontSize.s20),
               textAlign: TextAlign.center,
             ),
@@ -349,7 +348,7 @@ class _MedicinePageState extends State<MedicinePage> {
 
                 String formattedTime = thisTime != null
                     ? DateFormat.jm().format(thisTime)
-                    : "Select time";
+                    : AppStrings.selectTime;
 
                 return GestureDetector(
                   onTap: () => _selectTime(context, index),
@@ -369,7 +368,7 @@ class _MedicinePageState extends State<MedicinePage> {
                     },
                     validator: (value) {
                       if (_selectedFrequency != _startTimes.length) {
-                        return "Please complete the schedule for all the times.";
+                        return AppStrings.completeTheScheduleForAllTheTimes;
                       }
                       return null;
                     },
@@ -458,7 +457,7 @@ class _MedicinePageState extends State<MedicinePage> {
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      hintText: 'No. of days',
+                      hintText: AppStrings.numberOfDays,
                     ),
                     style: const TextStyle(fontSize: FontSize.s24),
                     validator: ((value) {
@@ -514,7 +513,7 @@ class _MedicinePageState extends State<MedicinePage> {
                       style: const TextStyle(fontSize: FontSize.s24),
                       validator: ((value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter the number of medicines.';
+                          return AppStrings.enterTheNumberOfMedicines;
                         }
                         return null;
                       }),
@@ -573,7 +572,7 @@ class _MedicinePageState extends State<MedicinePage> {
   }
 
   void _addReminder() {
-    String uuid = (const Uuid()).toString();
+    String uuid = (const Uuid().v4()).toString();
 
     Reminder newReminder = Reminder(
       uuid,
@@ -585,25 +584,30 @@ class _MedicinePageState extends State<MedicinePage> {
       int.parse(_medicineDurationController.text).toInt(),
       int.parse(_medicineStockController.text).toInt(), // remaining stock
     );
-    //
     remindersBox.add(newReminder);
-
-    newReminder.notifications = HiveList(notificationsBox);
 
     // save the notification first
     // then schedule them one by one
     for (DateTime? dt in _startTimes) {
       if (dt != null) {
-        var notifId = _generateNotificationId();
+        var notifId = _generateNotificationId().hashCode;
 
         NotificationModel newNotif =
             NotificationModel(notifId, dt.toIso8601String());
 
         notificationsBox.add(newNotif);
 
-        newReminder.notifications?.add(newNotif);
+        var finalDt = dt;
 
-        _createNotifications(uuid, notifId, dt);
+        // if the dt is past, add 1 day
+        if (DateTime.now().isAfter(dt)) {
+          finalDt = dt.add(const Duration(days: 1));
+        }
+
+        // newReminder.notifications?.add(newNotif);
+        newReminder.schedules.add(finalDt.toIso8601String());
+
+        _createNotifications(uuid, notifId, finalDt);
       }
     }
     newReminder.save();
@@ -638,8 +642,7 @@ class _MedicinePageState extends State<MedicinePage> {
     }
   }
 
-  int _generateNotificationId() {
-    var uuid = const Uuid();
-    return uuid.hashCode;
+  String _generateNotificationId() {
+    return const Uuid().v4();
   }
 }

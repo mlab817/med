@@ -1,4 +1,5 @@
 import 'package:confirm_dialog/confirm_dialog.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +13,7 @@ import '../../../app/di.dart';
 import '../../../app/init_hive.dart';
 import '../../../data/models/reminder_model.dart';
 import '../../resources/color_manager.dart';
+import '../../resources/routes_manager.dart';
 import '../../resources/size_manager.dart';
 
 class HomePage extends StatefulWidget {
@@ -77,98 +79,131 @@ class _HomePageState extends State<HomePage> {
                     int diff = DateTime.now().difference(startDate).inDays;
                     int remainingDays = reminder.numberOfDays - diff;
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: AppPadding.p12),
-                      height: AppSize.s200,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: ColorManager.darkgray),
-                        borderRadius: BorderRadius.circular(AppSize.s12),
+                    return Card(
+                      elevation: AppSize.s0,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          color: ColorManager.darkgray,
+                        ),
+                        borderRadius: const BorderRadius.all(
+                            Radius.circular(AppSize.s12)),
                       ),
-                      child: ListTile(
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              reminder.name,
-                              style: getBoldStyle(
-                                color: ColorManager.primary,
-                                fontSize: FontSize.s20,
-                              ),
-                            ),
-                            Text(
-                              "For ${reminder.ailmentName}",
-                            ),
-                            Text(
-                                "${reminder.frequency}x a day for ${reminder.numberOfDays.toString()} days"),
-                            Text(
-                                'Remaining stock: ${reminder.remainingStock.toString()} pieces'),
-                            Text(
-                                "Remaining days: ${remainingDays.toString()} days"),
-                            const SizedBox(height: AppSize.s20),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: reminder.notifications != null
-                                    ? reminder.notifications!
-                                        .map(
-                                          (notificationSchedule) => Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: AppPadding.p8),
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal: AppPadding.p12,
-                                                vertical: AppPadding.p4,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(50),
-                                                color: ColorManager.primary,
-                                              ),
-                                              child: Text(
-                                                DateFormat.jm().format(
-                                                  DateTime.parse(
-                                                    notificationSchedule
-                                                        .dateTime,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          ListTile(
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  reminder.name,
+                                  style: getBoldStyle(
+                                    color: ColorManager.primary,
+                                    fontSize: FontSize.s20,
+                                  ),
+                                ),
+                                Text(
+                                  "For ${reminder.ailmentName}",
+                                ),
+                                Text(
+                                    "${reminder.frequency}x a day for ${reminder.numberOfDays.toString()} days"),
+                                Text(
+                                    "Remaining stock: ${reminder.remainingStock.toString()} pieces"),
+                                Text(
+                                    "Remaining days: ${remainingDays.toString()} days"),
+                                const SizedBox(
+                                  height: AppSize.s10,
+                                ),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: reminder.schedules.isNotEmpty
+                                        ? reminder.schedules
+                                            .map(
+                                              (notificationSchedule) =>
+                                                  GestureDetector(
+                                                onTap: () {
+                                                  //
+                                                  _showTimePicker(
+                                                      DateTime.parse(
+                                                    notificationSchedule,
+                                                  ));
+                                                },
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: AppPadding.p8),
+                                                  child: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                      horizontal:
+                                                          AppPadding.p12,
+                                                      vertical: AppPadding.p4,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              50),
+                                                      color:
+                                                          ColorManager.primary,
+                                                    ),
+                                                    child: Text(
+                                                      DateFormat.jm().format(
+                                                        DateTime.parse(
+                                                          notificationSchedule,
+                                                        ),
+                                                      ),
+                                                      style: TextStyle(
+                                                        color:
+                                                            ColorManager.white,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
-                                                style: TextStyle(
-                                                  color: ColorManager.white,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
                                               ),
-                                            ),
-                                          ),
-                                        )
-                                        .cast<Widget>()
-                                        .toList()
-                                    : [],
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: SizedBox(
-                          height: AppSize.s48,
-                          width: AppSize.s100,
-                          child: IconButton(
-                            onPressed: () async {
-                              if (await confirm(
-                                context,
-                                title: const Text(AppStrings.confirmDelete),
-                                content:
-                                    const Text(AppStrings.confirmDeleteContent),
-                              )) {
-                                return reminder.delete();
-                              }
-                            },
-                            padding: EdgeInsets.zero,
-                            icon: Icon(
-                              Icons.delete,
-                              size: AppSize.s24,
-                              color: ColorManager.red,
+                                            )
+                                            .cast<Widget>()
+                                            .toList()
+                                        : [],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, Routes.editReminderRoute,
+                                      arguments: reminder);
+                                },
+                                icon: const Icon(Icons.edit),
+                                color: ColorManager.primary,
+                              ),
+                              const SizedBox(width: AppSize.s12),
+                              IconButton(
+                                onPressed: () async {
+                                  if (await confirm(
+                                    context,
+                                    title: const Text(AppStrings.confirmDelete),
+                                    content: const Text(
+                                        AppStrings.confirmDeleteContent),
+                                  )) {
+                                    return reminder.delete();
+                                  }
+                                },
+                                icon: const Icon(Icons.delete),
+                                color: ColorManager.red,
+                              ),
+                              const SizedBox(width: AppSize.s8),
+                            ],
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -182,6 +217,73 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showTimePicker(DateTime currentTime) {
+    DateTime? newDateTime;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: AppSize.s300,
+          child: Column(
+            children: [
+              SizedBox(
+                height: AppSize.s60,
+                child: CupertinoButton(
+                  child: Text(
+                    AppStrings.confirm,
+                    style: TextStyle(
+                      color: ColorManager.primary,
+                      fontSize: AppSize.s20,
+                    ),
+                  ),
+                  onPressed: () {
+                    // Code to handle the confirm button press
+
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content:
+                            Text('New Date Time ${newDateTime?.toString()}')));
+                  },
+                ),
+              ),
+              SizedBox(
+                height: AppSize.s180,
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.time,
+                  initialDateTime: currentTime
+                      .add(Duration(minutes: currentTime.minute % 10)),
+                  minuteInterval: 10,
+                  onDateTimeChanged: (DateTime newValue) {
+                    // Handle the new time selection
+                    // change internal data
+                    newDateTime = newValue;
+                  },
+                ),
+              ),
+              SizedBox(
+                height: AppSize.s60,
+                child: CupertinoButton(
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                      color: ColorManager.red,
+                      fontSize: AppSize.s20,
+                    ),
+                  ),
+                  onPressed: () {
+                    // Code to handle the confirm button press
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

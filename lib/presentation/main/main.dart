@@ -3,16 +3,16 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:med/app/di.dart';
 import 'package:med/domain/notification_service.dart';
+import 'package:med/presentation/main/history/history.dart';
+import 'package:med/presentation/main/home/home.dart';
+import 'package:med/presentation/main/hotlines/hotlines.dart';
 import 'package:med/presentation/resources/color_manager.dart';
 import 'package:med/presentation/resources/routes_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
-
-import '../../app/di.dart';
-import '../show_reminder/show_reminder.dart';
-import 'history/history.dart';
-import 'home/home.dart';
-import 'hotlines/hotlines.dart';
+import 'package:med/presentation/resources/strings_manager.dart';
+import 'package:med/presentation/show_reminder/show_reminder.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -50,13 +50,14 @@ class _MainPageState extends State<MainPage> {
 
   PreferredSizeWidget _getAppBar(String formattedDate) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: ColorManager.white,
       centerTitle: false,
       title: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Hello there!', style: Theme.of(context).textTheme.subtitle2),
+          Text(AppStrings.helloThere,
+              style: Theme.of(context).textTheme.subtitle2),
           Text(
             "Today is $formattedDate",
             style: const TextStyle(
@@ -115,7 +116,7 @@ class _MainPageState extends State<MainPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorManager.lightred,
               ),
-              child: const Text('Add Medicine'),
+              child: const Text(AppStrings.addMedicine),
             ),
           ),
           SizedBox(
@@ -128,7 +129,7 @@ class _MainPageState extends State<MainPage> {
                 backgroundColor: ColorManager.white,
               ),
               child: Text(
-                'Tips for today',
+                AppStrings.tipsForTodayLabel,
                 style: TextStyle(
                   color: ColorManager.blue,
                 ),
@@ -150,15 +151,15 @@ class _MainPageState extends State<MainPage> {
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.calendar_view_month),
-          label: "Schedule",
+          label: AppStrings.scheduleLabel,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.history),
-          label: "History",
+          label: AppStrings.historyLabel,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.call),
-          label: "Hotlines",
+          label: AppStrings.hotlinesLabel,
         ),
       ],
       onTap: (int index) {
@@ -171,10 +172,12 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> _testNotifications() async {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Test notification sent.')));
+    Navigator.pushNamed(context, Routes.notificationsRoute);
 
-    _notificationService.showNotifications();
+    // ScaffoldMessenger.of(context)
+    //     .showSnackBar(const SnackBar(content: Text('Test notification sent.')));
+    //
+    // _notificationService.showNotifications();
   }
 
   Future<void> _cancelAllNotifications() async {

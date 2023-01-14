@@ -17,22 +17,22 @@ Future<void> initHive() async {
   Hive.registerAdapter(HistoryModelAdapter());
 
   // open box named reminders if not open
-  if (!Hive.isBoxOpen(Constants.reminderBox)) {
-    remindersBox = await Hive.openBox<Reminder>(Constants.reminderBox);
+  if (!Hive.isBoxOpen(HiveBoxes.reminderBox)) {
+    remindersBox = await Hive.openBox<Reminder>(HiveBoxes.reminderBox);
   } else {
-    remindersBox = Hive.box<Reminder>(Constants.reminderBox);
+    remindersBox = Hive.box<Reminder>(HiveBoxes.reminderBox);
   }
 
-  if (!Hive.isBoxOpen(Constants.notificationsBox)) {
+  if (!Hive.isBoxOpen(HiveBoxes.notificationsBox)) {
     notificationsBox =
-        await Hive.openBox<NotificationModel>(Constants.notificationsBox);
+        await Hive.openBox<NotificationModel>(HiveBoxes.notificationsBox);
   } else {
-    notificationsBox = Hive.box<NotificationModel>(Constants.notificationsBox);
+    notificationsBox = Hive.box<NotificationModel>(HiveBoxes.notificationsBox);
   }
 
-  if (!Hive.isBoxOpen(Constants.historyBox)) {
-    historyBox = await Hive.openBox<HistoryModel>(Constants.historyBox);
+  if (!Hive.isBoxOpen(HiveBoxes.historyBox)) {
+    historyBox = await Hive.openBox<HistoryModel>(HiveBoxes.historyBox);
   } else {
-    historyBox = Hive.box<HistoryModel>(Constants.historyBox);
+    historyBox = Hive.box<HistoryModel>(HiveBoxes.historyBox);
   }
 }

@@ -1,7 +1,5 @@
 import 'package:hive/hive.dart';
 
-import 'notification_model.dart';
-
 part 'reminder_model.g.dart';
 
 @HiveType(typeId: 0)
@@ -28,9 +26,9 @@ class Reminder extends HiveObject {
   int remainingStock;
 
   @HiveField(7)
-  HiveList<NotificationModel>? notifications;
+  // HiveList<NotificationModel>? notifications;
+  List<String> schedules = [];
 
   Reminder(this.uuid, this.name, this.frequency, this.startAt, this.ailmentName,
-      this.numberOfDays, this.remainingStock,
-      {this.notifications});
+      this.numberOfDays, this.remainingStock);
 }

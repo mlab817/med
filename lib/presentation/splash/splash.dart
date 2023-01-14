@@ -5,6 +5,7 @@ import 'package:med/app/di.dart';
 import 'package:med/app/preferences.dart';
 import 'package:med/presentation/resources/routes_manager.dart';
 
+import '../../app/constants.dart';
 import '../resources/assets_manager.dart';
 import '../resources/size_manager.dart';
 
@@ -21,7 +22,7 @@ class _SplashPageState extends State<SplashPage> {
   Timer? _timer;
 
   void _startDelay() {
-    _timer = Timer(const Duration(seconds: 2), _goNext);
+    _timer = Timer(DurationConstants.s2, _goNext);
   }
 
   void _goNext() {

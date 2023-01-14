@@ -9,6 +9,7 @@ import 'package:med/presentation/resources/routes_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 
 import '../../data/models/history_model.dart';
+import '../resources/strings_manager.dart';
 import '../resources/styles_manager.dart';
 
 class ShowReminderPage extends StatefulWidget {
@@ -61,14 +62,14 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
             children: [
               const SizedBox(height: AppSize.s128),
               Text(
-                _reminder?.name ?? "No Medicine Name",
+                _reminder?.name ?? AppStrings.unknownMedicine,
                 style: getSemiBoldStyle(
                   color: ColorManager.primary,
                   fontSize: FontSize.s24,
                 ),
               ),
               Text(
-                "For ${_reminder?.ailmentName ?? "Unknown ailment"}",
+                "For ${_reminder?.ailmentName ?? AppStrings.unknownAilment}",
                 style: getRegularStyle(
                   color: ColorManager.black,
                   fontSize: FontSize.s20,
@@ -99,7 +100,7 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
                         ),
                       ),
                       const SizedBox(height: AppSize.s10),
-                      const Text('Skip'),
+                      const Text(AppStrings.skip),
                     ],
                   ),
                   Column(
@@ -116,7 +117,7 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
                         ),
                       ),
                       const SizedBox(height: AppSize.s10),
-                      const Text('Done'),
+                      const Text(AppStrings.done),
                     ],
                   ),
                 ],
@@ -140,7 +141,7 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
           ),
           const SizedBox(height: AppSize.s50),
           Text(
-            'Failed to find that reminder. It may have been deleted.',
+            AppStrings.failedToFindReminder,
             textAlign: TextAlign.center,
             style: getBoldStyle(
               color: ColorManager.red,
@@ -157,7 +158,7 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
                 backgroundColor: ColorManager.primary,
               ),
               child: const Text(
-                'Go Home',
+                AppStrings.goHome,
                 style: TextStyle(
                   fontSize: FontSize.s16,
                 ),
@@ -182,7 +183,7 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
     if (newValue <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
-              'You are low on stock of ${_reminder?.name ?? "Unknown medicine"}!')));
+              'You are low on stock of ${_reminder?.name ?? AppStrings.unknownMedicine}!')));
     }
 
     _exit();
@@ -190,10 +191,10 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
 
   void _skipMedicine() async {
     if (await confirm(context,
-        title: const Text('Confirm Skip'),
-        content: const Text('Are you sure you want to skip this dose?'))) {
+        title: const Text(AppStrings.confirmSkip),
+        content: const Text(AppStrings.areYouSureYouWantToSkip))) {
       HistoryModel history = HistoryModel(
-        _reminder?.name ?? "Unknown Medicine Name",
+        _reminder?.name ?? AppStrings.unknownMedicine,
         DateTime.now().toString(),
         MedicineAction.skipped.toString(),
       );
@@ -210,7 +211,7 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
 
   void _record() {
     HistoryModel history = HistoryModel(
-      _reminder?.name ?? "Unknown Medicine Name",
+      _reminder?.name ?? AppStrings.unknownMedicine,
       DateTime.now().toString(),
       MedicineAction.taken.toString(),
     );

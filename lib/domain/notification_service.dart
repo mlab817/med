@@ -39,8 +39,8 @@ class NotificationService {
   final AndroidNotificationDetails _androidNotificationDetails =
       const AndroidNotificationDetails(
     'medicineReminder',
-    'your channel name',
-    channelDescription: 'your channel description',
+    'medicineChannel',
+    channelDescription: 'channelDescription',
     importance: Importance.max,
     priority: Priority.high,
     ticker: 'ticker',
@@ -50,13 +50,13 @@ class NotificationService {
     actions: [
       AndroidNotificationAction(
         NotificationActionsId.snooze,
-        "Snooze",
+        AppStrings.snooze,
         titleColor: Colors.redAccent,
         showsUserInterface: true,
       ),
       AndroidNotificationAction(
         NotificationActionsId.markAsDone,
-        "Mark as Done",
+        AppStrings.markAsDone,
         titleColor: Colors.lightGreen,
         showsUserInterface: true,
       ),
@@ -87,8 +87,8 @@ class NotificationService {
 
     await _flutterLocalNotificationsPlugin.zonedSchedule(
       id ?? uuid, // set to custom uuid if id is not defined
-      title ?? "Time to take your medicine!",
-      body ?? "This is the Notification Body!",
+      title ?? AppStrings.timeToTakeYourMedicine,
+      body ?? AppStrings.thisIsTheNotificationBody,
       nextTime ?? tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1)),
       NotificationDetails(android: _androidNotificationDetails),
       androidAllowWhileIdle: true,
@@ -104,5 +104,13 @@ class NotificationService {
 
   Future<void> cancelAllNotifications() async {
     await _flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+  Future<List<PendingNotificationRequest>?>
+      getPendingNotificationRequests() async {
+    return await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.pendingNotificationRequests();
   }
 }
