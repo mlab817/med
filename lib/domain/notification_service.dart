@@ -54,11 +54,11 @@ class NotificationService {
   const AndroidNotificationDetails(
     'medicineReminder',
     'medicineChannel',
-    channelDescription: 'channelDescription',
+    channelDescription: 'This is the medicine reminder channel',
     importance: Importance.max,
     priority: Priority.high,
     ticker: 'ticker',
-    fullScreenIntent: true,
+    fullScreenIntent: false,
     sound: RawResourceAndroidNotificationSound('alarm'),
     playSound: true,
     actions: [
