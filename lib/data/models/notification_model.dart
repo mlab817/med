@@ -10,8 +10,13 @@ class NotificationModel extends HiveObject {
   @HiveField(1)
   String dateTime;
 
+  @HiveField(2)
+  String
+      reminderUuid; // save a reference to uuid of reminder so we can delete them
+
   NotificationModel(
     this.notificationId,
     this.dateTime,
+    this.reminderUuid,
   );
 }

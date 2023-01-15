@@ -2,12 +2,10 @@ import 'package:hive/hive.dart';
 
 part 'history_model.g.dart';
 
-enum MedicineAction { taken, skipped }
-
-extension MedicineActionString on MedicineAction {
-  String get string {
-    return toString();
-  }
+class MedicineAction {
+  static const String taken = "taken";
+  static const String skipped = "skipped";
+  static const String noAction = "no action";
 }
 
 @HiveType(typeId: 2)

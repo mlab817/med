@@ -97,6 +97,7 @@ flutter:
     - assets/json/illness.json
     - assets/json/tip.json
     - assets/json/empty.json
+    - assets/alarm.mp3
     - assets/mix.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see

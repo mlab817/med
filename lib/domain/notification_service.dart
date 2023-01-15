@@ -10,7 +10,7 @@ import '../presentation/resources/strings_manager.dart';
 class NotificationService {
   // NotificationService(this._flutterLocalNotificationsPlugin);
   static final NotificationService _notificationService =
-      NotificationService._internal();
+  NotificationService._internal();
 
   factory NotificationService() {
     return _notificationService;
@@ -21,23 +21,37 @@ class NotificationService {
   static const channelId = '123';
 
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   Future<void> init(callback) async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon');
+    AndroidInitializationSettings('app_icon');
 
     const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+    InitializationSettings(android: initializationSettingsAndroid);
 
     tz.initializeTimeZones();
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: callback);
+
+    requestPermission();
+  }
+
+  Future<void> requestPermission() async {
+    var permission = await _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()?.areNotificationsEnabled() ?? false;
+
+    if (!permission) {
+      showNotifications();
+
+      _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()?.requestPermission() ?? Future.value(false);
+    }
   }
 
   final AndroidNotificationDetails _androidNotificationDetails =
-      const AndroidNotificationDetails(
+  const AndroidNotificationDetails(
     'medicineReminder',
     'medicineChannel',
     channelDescription: 'channelDescription',
@@ -45,7 +59,7 @@ class NotificationService {
     priority: Priority.high,
     ticker: 'ticker',
     fullScreenIntent: true,
-    sound: RawResourceAndroidNotificationSound('mix'),
+    sound: RawResourceAndroidNotificationSound('alarm'),
     playSound: true,
     actions: [
       AndroidNotificationAction(
@@ -76,12 +90,11 @@ class NotificationService {
     );
   }
 
-  Future<void> scheduleNotifications(
-      {int? id,
-      String? title,
-      String? body,
-      tz.TZDateTime? nextTime,
-      String? payload}) async {
+  Future<void> scheduleNotifications({int? id,
+    String? title,
+    String? body,
+    tz.TZDateTime? nextTime,
+    String? payload}) async {
     // generate notificationId
     int uuid = (const Uuid()).hashCode;
 
@@ -93,7 +106,7 @@ class NotificationService {
       NotificationDetails(android: _androidNotificationDetails),
       androidAllowWhileIdle: true,
       uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload ?? AppStrings.empty,
     );
   }
@@ -107,10 +120,14 @@ class NotificationService {
   }
 
   Future<List<PendingNotificationRequest>?>
-      getPendingNotificationRequests() async {
+  getPendingNotificationRequests() async {
     return await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+        AndroidFlutterLocalNotificationsPlugin>()
         ?.pendingNotificationRequests();
+  }
+
+  Future<void> cancel(int notificationId) async {
+    await _flutterLocalNotificationsPlugin.cancel(notificationId);
   }
 }

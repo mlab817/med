@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:med/app/functions.dart';
 import 'package:med/domain/notification_service.dart';
 import 'package:med/presentation/resources/assets_manager.dart';
 import 'package:med/presentation/resources/strings_manager.dart';
 import 'package:med/presentation/resources/styles_manager.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 import '../../../app/di.dart';
 import '../../../app/init_hive.dart';
@@ -24,9 +26,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final NotificationService _notificationService =
-      instance<NotificationService>();
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -120,51 +119,16 @@ class _HomePageState extends State<HomePage> {
                                   child: Row(
                                     children: reminder.schedules.isNotEmpty
                                         ? reminder.schedules
-                                            .map(
-                                              (notificationSchedule) =>
-                                                  GestureDetector(
-                                                onTap: () {
-                                                  //
-                                                  _showTimePicker(
-                                                      DateTime.parse(
-                                                    notificationSchedule,
-                                                  ));
-                                                },
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: AppPadding.p8),
-                                                  child: Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                      horizontal:
-                                                          AppPadding.p12,
-                                                      vertical: AppPadding.p4,
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              50),
-                                                      color:
-                                                          ColorManager.primary,
-                                                    ),
-                                                    child: Text(
-                                                      DateFormat.jm().format(
-                                                        DateTime.parse(
-                                                          notificationSchedule,
-                                                        ),
-                                                      ),
-                                                      style: TextStyle(
-                                                        color:
-                                                            ColorManager.white,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            )
+                                            .asMap()
+                                            .map((notifIndex,
+                                                    notificationSchedule) =>
+                                                MapEntry(
+                                                    notifIndex,
+                                                    _getSchedulePill(
+                                                        notifIndex,
+                                                        notificationSchedule,
+                                                        reminder)))
+                                            .values
                                             .cast<Widget>()
                                             .toList()
                                         : [],
@@ -194,7 +158,14 @@ class _HomePageState extends State<HomePage> {
                                     content: const Text(
                                         AppStrings.confirmDeleteContent),
                                   )) {
-                                    return reminder.delete();
+                                    for (var schedule in reminder.schedules) {
+                                      removeNotifications(
+                                          reminder.uuid,
+                                          tz.TZDateTime.parse(
+                                              tz.local, schedule));
+                                    }
+
+                                    reminder.delete();
                                   }
                                 },
                                 icon: const Icon(Icons.delete),
@@ -220,8 +191,47 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showTimePicker(DateTime currentTime) {
+  // schedule index is the index of the schedule in the list of schedules
+  Widget _getSchedulePill(
+      int schedIndex, String notificationSchedule, Reminder reminder) {
+    final parsedSchedule = DateTime.parse(notificationSchedule);
+    final formattedSchedule = DateFormat.jm().format(parsedSchedule);
+
+    return GestureDetector(
+      onTap: () {
+        //
+        _showTimePicker(
+            schedIndex, DateTime.parse(notificationSchedule), reminder);
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(right: AppPadding.p8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppPadding.p12,
+            vertical: AppPadding.p4,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSize.s50),
+            color: ColorManager.primary,
+          ),
+          child: Text(
+            formattedSchedule,
+            style: TextStyle(
+              color: ColorManager.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showTimePicker(int index, DateTime currentTime, Reminder reminder) {
     DateTime? newDateTime;
+    final oldDateTime =
+        reminder.schedules[index]; // store the oldDateTime to replace
+    final oldDataTimeDt = tz.TZDateTime.parse(tz.local, oldDateTime);
+    final startedAt = tz.TZDateTime.parse(tz.local, reminder.startAt);
 
     showModalBottomSheet(
       context: context,
@@ -241,12 +251,39 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   onPressed: () {
+                    if (newDateTime == null) {
+                      return;
+                    }
+                    debugPrint(newDateTime.toString());
                     // Code to handle the confirm button press
+                    reminder.schedules[index] = newDateTime.toString();
+                    reminder.save();
+
+                    debugPrint("reminder ${reminder.toString()}");
+                    debugPrint(reminder.schedules.toString());
+
+                    removeNotifications(
+                      reminder.uuid,
+                      oldDataTimeDt,
+                    );
+
+                    // calculate remaining duration
+                    final duration =
+                        DateTime.now().compareTo(startedAt).floor();
+
+                    createNotifications(
+                      reminder.uuid,
+                      newDateTime!,
+                      duration,
+                      reminder.name,
+                    );
+
+                    // create new notifications
+
+                    // handle replacement of notifications by deleting related pending
+                    // and creating new ones
 
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content:
-                            Text('New Date Time ${newDateTime?.toString()}')));
                   },
                 ),
               ),
@@ -255,8 +292,8 @@ class _HomePageState extends State<HomePage> {
                 child: CupertinoDatePicker(
                   mode: CupertinoDatePickerMode.time,
                   initialDateTime: currentTime
-                      .add(Duration(minutes: currentTime.minute % 10)),
-                  minuteInterval: 10,
+                      .add(Duration(minutes: 1 - currentTime.minute % 1)),
+                  minuteInterval: 1,
                   onDateTimeChanged: (DateTime newValue) {
                     // Handle the new time selection
                     // change internal data

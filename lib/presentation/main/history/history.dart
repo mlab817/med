@@ -73,7 +73,6 @@ class _HistoryPageState extends State<HistoryPage> {
                       DateTime takenAt = DateTime.parse(history.takenAt);
 
                       return SizedBox(
-                        width: double.infinity,
                         child: ListTile(
                           title: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,12 +85,11 @@ class _HistoryPageState extends State<HistoryPage> {
                                 style: getLightStyle(
                                   color: ColorManager.darkgray,
                                 ),
-                              )
+                              ),
+                              const SizedBox(height: AppSize.s10),
+                              _getStatus(history.medicineAction),
                             ],
                           ),
-                          // trailing: history.medicineAction != null
-                          //     ? _getStatus(history.medicineAction)
-                          //     : Container(),
                         ),
                       );
                     });
@@ -107,14 +105,16 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _getStatus(String medicineAction) {
-    final medicineActionMap = {
-      'skipped': MedicineAction.skipped,
-      'taken': MedicineAction.taken,
-    };
-
-    switch (medicineActionMap[medicineAction]) {
+    debugPrint(medicineAction);
+    switch (medicineAction) {
       case MedicineAction.skipped:
-        return Text(MedicineAction.skipped.toString());
+        return Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppPadding.p12, vertical: AppPadding.p4,),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppSize.s4),
+              color: ColorManager.red,
+            ),
+            child: Text(medicineAction.toUpperCase(), style: getBoldStyle(color: ColorManager.white)));
         return Container(
           padding: const EdgeInsets.all(AppPadding.p8),
           decoration: BoxDecoration(
@@ -124,7 +124,13 @@ class _HistoryPageState extends State<HistoryPage> {
           child: Text(MedicineAction.skipped.toString().toUpperCase()),
         );
       case MedicineAction.taken:
-        return Text(MedicineAction.taken.toString());
+        return Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppPadding.p12, vertical: AppPadding.p4,),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppSize.s50),
+              color: ColorManager.green,
+            ),
+            child: Text(medicineAction.toUpperCase(), style: getBoldStyle(color: ColorManager.white,)));
       default:
         return Container();
     }

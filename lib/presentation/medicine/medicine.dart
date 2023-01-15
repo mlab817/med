@@ -1,19 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:med/app/di.dart';
-//
-import 'package:med/app/init_hive.dart';
-import 'package:med/data/models/notification_model.dart';
-import 'package:med/data/models/reminder_model.dart';
 import 'package:med/domain/notification_service.dart';
 import 'package:med/presentation/resources/assets_manager.dart';
 import 'package:med/presentation/resources/color_manager.dart';
 import 'package:med/presentation/resources/routes_manager.dart';
 import 'package:med/presentation/resources/size_manager.dart';
 import 'package:med/presentation/resources/strings_manager.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:uuid/uuid.dart';
+
+import '../../app/functions.dart';
 
 class MedicinePage extends StatefulWidget {
   const MedicinePage({Key? key}) : super(key: key);
@@ -23,9 +22,6 @@ class MedicinePage extends StatefulWidget {
 }
 
 class _MedicinePageState extends State<MedicinePage> {
-  final NotificationService _notificationService =
-      instance<NotificationService>();
-
   final PageController _pageController = PageController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -370,6 +366,9 @@ class _MedicinePageState extends State<MedicinePage> {
                       if (_selectedFrequency != _startTimes.length) {
                         return AppStrings.completeTheScheduleForAllTheTimes;
                       }
+                      if (_startTimes.any((item) => item == null)) {
+                        return AppStrings.completeTheScheduleForAllTheTimes;
+                      }
                       return null;
                     },
                   ),
@@ -556,8 +555,8 @@ class _MedicinePageState extends State<MedicinePage> {
             child: CupertinoDatePicker(
               mode: CupertinoDatePickerMode.time,
               initialDateTime: currentTime
-                  .add(Duration(minutes: 10 - currentTime.minute % 10)),
-              minuteInterval: 10,
+                  .add(Duration(minutes: 1 - currentTime.minute % 1)),
+              minuteInterval: 1,
               onDateTimeChanged: (DateTime newDateTime) {
                 // Handle the new time selection
                 setState(() {
@@ -572,45 +571,13 @@ class _MedicinePageState extends State<MedicinePage> {
   }
 
   void _addReminder() {
-    String uuid = (const Uuid().v4()).toString();
-
-    Reminder newReminder = Reminder(
-      uuid,
-      _medicineNameController.text,
-      _selectedFrequency!,
-      _startTimes[0]!.toIso8601String(),
-      // first start time, this can introduce a bug if the dose has already passed for the day
-      _medicineIllnessController.text,
-      int.parse(_medicineDurationController.text).toInt(),
-      int.parse(_medicineStockController.text).toInt(), // remaining stock
-    );
-    remindersBox.add(newReminder);
-
-    // save the notification first
-    // then schedule them one by one
-    for (DateTime? dt in _startTimes) {
-      if (dt != null) {
-        var notifId = _generateNotificationId().hashCode;
-
-        NotificationModel newNotif =
-            NotificationModel(notifId, dt.toIso8601String());
-
-        notificationsBox.add(newNotif);
-
-        var finalDt = dt;
-
-        // if the dt is past, add 1 day
-        if (DateTime.now().isAfter(dt)) {
-          finalDt = dt.add(const Duration(days: 1));
-        }
-
-        // newReminder.notifications?.add(newNotif);
-        newReminder.schedules.add(finalDt.toIso8601String());
-
-        _createNotifications(uuid, notifId, finalDt);
-      }
-    }
-    newReminder.save();
+    addReminder(ReminderInput(
+        _medicineNameController.text,
+        _selectedFrequency ?? 0,
+        _startTimes,
+        _medicineIllnessController.text,
+        int.parse(_medicineDurationController.text),
+        int.parse(_medicineStockController.text)));
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -620,29 +587,27 @@ class _MedicinePageState extends State<MedicinePage> {
 
     Navigator.pushReplacementNamed(context, Routes.mainRoute);
   }
+}
 
-  void _createNotifications(String uuid, int notifId, DateTime startAt) async {
-    // iterate and add 1 day
-    for (int i = 0;
-        i < int.parse(_medicineDurationController.text).toInt();
-        i++) {
-      // just add i to make sure notifs are unique
-      // need to store this to db
-      await _notificationService.scheduleNotifications(
-        id: notifId + i,
-        title: AppStrings.timeForYourMedicine,
-        body: 'Take ${_medicineNameController.text} now.',
-        nextTime: tz.TZDateTime.from(
-            startAt.add(
-              Duration(days: i),
-            ),
-            tz.local),
-        payload: uuid,
-      );
-    }
-  }
+class ReminderInput {
+  String name;
 
-  String _generateNotificationId() {
-    return const Uuid().v4();
-  }
+  int frequency;
+
+  List<DateTime?> startTimes;
+
+  String illness;
+
+  int duration;
+
+  int stock;
+
+  ReminderInput(
+    this.name,
+    this.frequency,
+    this.startTimes,
+    this.illness,
+    this.duration,
+    this.stock,
+  );
 }

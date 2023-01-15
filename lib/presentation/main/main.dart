@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:med/app/init_hive.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:intl/intl.dart';
 import 'package:med/app/di.dart';
 import 'package:med/domain/notification_service.dart';
@@ -35,7 +38,8 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    DateTime now = DateTime.now();
+    // make sure the time is adjusted to local timezone
+    DateTime now = tz.TZDateTime.now(tz.local);
 
     String formattedDate = DateFormat("MMM dd, yyyy").format(now);
 
@@ -68,6 +72,7 @@ class _MainPageState extends State<MainPage> {
       ),
       automaticallyImplyLeading: false,
       elevation: AppSize.s0,
+      // actions are visible only on debug mode
       actions: [
         if (kDebugMode)
           IconButton(
@@ -107,6 +112,7 @@ class _MainPageState extends State<MainPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
+          // Add Medicine button
           SizedBox(
             height: AppSize.s50,
             child: ElevatedButton(
@@ -119,6 +125,7 @@ class _MainPageState extends State<MainPage> {
               child: const Text(AppStrings.addMedicine),
             ),
           ),
+          // Tip for today button
           SizedBox(
             height: AppSize.s50,
             child: ElevatedButton(
@@ -141,6 +148,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+  // bottom navigator
   Widget _getBottomNavigator() {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
@@ -149,14 +157,17 @@ class _MainPageState extends State<MainPage> {
       selectedItemColor: ColorManager.white,
       type: BottomNavigationBarType.fixed,
       items: const [
+        // Schedule
         BottomNavigationBarItem(
           icon: Icon(Icons.calendar_view_month),
           label: AppStrings.scheduleLabel,
         ),
+        // History
         BottomNavigationBarItem(
           icon: Icon(Icons.history),
           label: AppStrings.historyLabel,
         ),
+        // Hotlines
         BottomNavigationBarItem(
           icon: Icon(Icons.call),
           label: AppStrings.hotlinesLabel,
@@ -177,7 +188,9 @@ class _MainPageState extends State<MainPage> {
     // ScaffoldMessenger.of(context)
     //     .showSnackBar(const SnackBar(content: Text('Test notification sent.')));
     //
-    // _notificationService.showNotifications();
+    final reminder = remindersBox.values.first;
+
+    _notificationService.showNotifications(payload: reminder.uuid);
   }
 
   Future<void> _cancelAllNotifications() async {

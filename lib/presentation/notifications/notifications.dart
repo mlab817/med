@@ -24,45 +24,56 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<List<PendingNotificationRequest>?>(
-        future: _getActiveNotifications(),
-        // valueListenable: notificationsBox.listenable(),
-        builder: (BuildContext context,
-            AsyncSnapshot<List<PendingNotificationRequest>?> snapshot) {
-          if (snapshot.data != null) {
-            final items = snapshot.data!;
+        body: SafeArea(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        TextButton(
+            onPressed: _clearAllNotifications, child: const Text('Clear All')),
+        Expanded(
+          child: FutureBuilder<List<PendingNotificationRequest>?>(
+            future: _getActiveNotifications(),
+            // valueListenable: notificationsBox.listenable(),
+            builder: (BuildContext context,
+                AsyncSnapshot<List<PendingNotificationRequest>?> snapshot) {
+              if (snapshot.data != null) {
+                final items = snapshot.data!;
 
-            return ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
+                return ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
 
-                  return Column(
-                    children: [
-                      Text(item.id.toString()),
-                      Text(item.title.toString()),
-                      Text(item.body.toString()),
-                      Text(item.payload.toString()),
-                    ],
-                  );
-                });
-          }
-          return Container();
-          // return ListView.builder(
-          //   itemCount: box.length,
-          //   itemBuilder: (context, index) {
-          //     NotificationModel notification = box.getAt(index);
-          //
-          //     return Column(
-          //       children: [
-          //         Text(notification.notificationId.toString()),
-          //         Text(notification.dateTime),
-          //       ],
-          //     );
-          //   },
-          // );
-        },
-      ),
-    );
+                      return Column(
+                        children: [
+                          Text(item.id.toString()),
+                          Text(item.title.toString()),
+                          Text(item.body.toString()),
+                          Text(item.payload.toString()),
+                        ],
+                      );
+                    });
+              }
+              return Container();
+              // return ListView.builder(
+              //   itemCount: box.length,
+              //   itemBuilder: (context, index) {
+              //     NotificationModel notification = box.getAt(index);
+              //
+              //     return Column(
+              //       children: [
+              //         Text(notification.notificationId.toString()),
+              //         Text(notification.dateTime),
+              //       ],
+              //     );
+              //   },
+              // );
+            },
+          ),
+        ),
+      ]),
+    ));
+  }
+
+  void _clearAllNotifications() async {
+    await _notificationService.cancelAllNotifications();
   }
 }

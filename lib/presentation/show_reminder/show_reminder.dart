@@ -196,7 +196,7 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
       HistoryModel history = HistoryModel(
         _reminder?.name ?? AppStrings.unknownMedicine,
         DateTime.now().toString(),
-        MedicineAction.skipped.toString(),
+        MedicineAction.skipped,
       );
       //
       historyBox.add(history);
@@ -213,7 +213,7 @@ class _ShowReminderPageState extends State<ShowReminderPage> {
     HistoryModel history = HistoryModel(
       _reminder?.name ?? AppStrings.unknownMedicine,
       DateTime.now().toString(),
-      MedicineAction.taken.toString(),
+      MedicineAction.taken,
     );
     //
     historyBox.add(history);
